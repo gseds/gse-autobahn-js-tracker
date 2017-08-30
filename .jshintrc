@@ -1,0 +1,49 @@
+{
+    "node": true,
+    "browser": true,
+    "esnext": true,
+    "bitwise": false,
+    "camelcase": false,
+    "curly": false,
+    "eqeqeq": true,
+    "immed": true,
+    "latedef": true,
+    "newcap": false,
+    "noarg": true,
+    "quotmark": "single",
+    "regexp": true,
+    "undef": true,
+    "unused": false,
+    "strict": false,
+    "trailing": true,
+    "validthis": true,
+    "loopfunc": true,
+    "smarttabs": false,
+    "-W117": true,
+    "-W038": true,
+    "expr": true,
+    "globals": {
+        "describe": true,
+        "before": true,
+        "beforeEach": true,
+        "after": true,
+        "afterEach": true,
+        "it": true,
+        "require": true,
+        "exports": true,
+        "module": true,
+        "ApplicationConfiguration": true
+    },
+    "indent": 4,
+    "devel": true,
+    "noempty": true,
+    "maxstatements": 100
+}
+
+/*
+    newcap - allow constructor name to start with lower case
+    validthis - 'this' (possible strict violation)
+    loopfunc - allow functions inside loop
+    -W117 - is not defined (variable of function error resolve)
+    -W038 - used out of scope fix
+*/

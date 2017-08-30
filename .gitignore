@@ -1,0 +1,12 @@
+# Node JS default files
+node_modules/
+lib/
+
+# config.js
+config.js
+gsedata-autobahn-receiver/settings.js
+
+
+# html, lib files
+example.html
+lib/

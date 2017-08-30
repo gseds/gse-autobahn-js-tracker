@@ -1,0 +1,24 @@
+{
+  "name": "tracker-js-sdk",
+  "version": "3.0.0",
+  "authors": [
+    "GSE Softwares & Services <teampnp@pearson.com>"
+  ],
+  "description": "Tracker SDK  is a JavaScript library for measuring how users interact with your website. It offers more flexibility for developers to customize their implementations.",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals",
+    "node",
+    "yui"
+  ],
+  "keywords": [
+    "tracker",
+    "sdk"
+  ],
+  "license": "MIT",
+  "homepage": "http://api.english.com/gseservices/js/sdk/v2",
+  "dependencies": {
+    "tv4": "~1.2.5"
+  }
+}
