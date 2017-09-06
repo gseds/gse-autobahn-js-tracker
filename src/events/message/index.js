@@ -31,7 +31,7 @@ function catchSchemaError(data){
     }
     else{
         var ajaxRequest = new PetRequest();
-        var url = autobahUrls.collection+"/"+this.trackerObject.sdkParams.username;
+        var url = autobahUrls.collection+"/"+this.trackerObject.sdkParams.trackingID;
         ajaxRequest.send(url, data);
     }
 };
@@ -59,17 +59,28 @@ function autobahnSchemaCookieValidator(event){
     return false;
 };
 
-function autobahnValidator(validationFlag, event, callback){
+function autobahnValidator(schemaValidation, autofill, event, callback){
     
     if(event.namespace && event.messageTypeCode){
+
+        if(!schemaValidation && !autofill){
+            if(typeof callback == "function"){
+                callback(null, event);
+                return;
+            }
+        }
 
         var schemaFoundInCookie = autobahnSchemaCookieValidator(event);
 
         if(schemaFoundInCookie){
 
-            event.payload = autofillParameters(event.payload, schemaFoundInCookie);
+            if(autofill){
 
-            if(validationFlag){
+                event.payload = autofillParameters(event.payload, schemaFoundInCookie);    
+            }
+            
+
+            if(schemaValidation){
 
                 var schemaValidationResult = tv4.validateMultiple(event.payload, schemaFoundInCookie, true);
 
@@ -99,12 +110,15 @@ function autobahnValidator(validationFlag, event, callback){
 
                 data = data.response;
 
-                event.payload = autofillParameters(event.payload, data.schemaDefinition);
+                if(autofill){
+                    event.payload = autofillParameters(event.payload, data.schemaDefinition);
+                }
 
+                
                 var schema = data.schemaDefinition, schemaValidationResult = tv4.validateMultiple(event.payload, schema, true);
                 var cookie = new PetCookie();
                 cookie.create(event.namespace+"|"+event.messageTypeCode+"|"+(event.messageVersion? event.messageVersion : 'latest'),'', 180 * 60 * 1000, schema); 
-                if(!schemaValidationResult.valid && validationFlag){
+                if(!schemaValidationResult.valid && schemaValidation){
                     event.error = schemaValidationResult;
                     catchSchemaError(event);
                     return false;
@@ -165,7 +179,7 @@ PetMessage.prototype.track = function () {
     }
     
         
-    autobahnValidator(this.eventParams.sdkParams.needsSchemaValidation,
+    autobahnValidator(this.eventParams.sdkParams.schemaValidation,this.eventParams.sdkParams.autofill,
         format_payload, function(err, validatedData){
             if(err){
                 console.error(err);

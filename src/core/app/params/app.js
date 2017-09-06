@@ -17,11 +17,16 @@ function PetAppParams() {
      * @member {object}
      */
     this.params = {
-        // username
-        username: null,
+        //schemaValidation
+        schemaValidation: true,
 
-        //password
-        password: null,
+        //autofill
+        autofill: true,
+
+        //debugMode
+        debugMode: true,
+
+        originatingSystemCode: "AutobahnTrackerSDK",
 
         //cookie rotatory time
         cookieRotatoryTime: 'AUTOBAHN_COOKIE_EXPIRY',

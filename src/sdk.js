@@ -101,10 +101,10 @@ PetSdk.prototype.init = function () {
     //cookieHelper.create('SDK_COOKIE_NAME', sdkParams.cookiePrefix, sdkParams.cookieDomainName);
     // initialize the tracker object
 
-    this.tracker = {};
-    var self = this;
+    //this.tracker = {};
+    ///var self = this;
     //tracker.enableAutoTracking(sdkParams.autotracking);
-
+    //console.log(sdkParams);
     window.trackingID  = arguments[0];
-    self = utilHelper.merge(self, new PetTracker(sdkParams, sdkErrors));
+    return utilHelper.merge(self, new PetTracker(sdkParams, sdkErrors));
 };
