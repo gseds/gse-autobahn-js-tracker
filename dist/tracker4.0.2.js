@@ -1771,11 +1771,16 @@ function PetAppParams() {
      * @member {object}
      */
     this.params = {
-        // username
-        username: null,
+        //schemaValidation
+        schemaValidation: true,
 
-        //password
-        password: null,
+        //autofill
+        autofill: true,
+
+        //debugMode
+        debugMode: true,
+
+        originatingSystemCode: "AutobahnTrackerSDK",
 
         //cookie rotatory time
         cookieRotatoryTime: '180',
@@ -1798,11 +1803,13 @@ function PetAppParams() {
         // Application Environment
         environment: 'production',
 
+        offlineSupport: true,
+
         // Cookie Domain Name
-        cookieDomainName: '',
+        cookieDomainName: 'autobahn',
 
         // Cookie Prefix
-        cookiePrefix: '',
+        cookiePrefix: 'gse',
 
         // Interaction Type | Tracking Event Type
         interactionType: null,
@@ -2692,7 +2699,7 @@ var petIntervalId = null;
  * PetCookie
  * @class PetRequest
  */
-function PetRequest() {
+function PetRequest(trackerObject) {
     /**
      * @member {Object} tracking system receiver api URLs
      */
@@ -2703,6 +2710,8 @@ function PetRequest() {
         production: '//api.english.com/autobahn',
         defaultUrl: '//devapi.english.com/autobahn'
     };
+
+    this.trackerObject = trackerObject || {};
 
 }
 
@@ -2794,18 +2803,18 @@ PetRequest.prototype.send = function () {
     // }
 
     // if LS available, enable interval-based data processing
-    // if (offineEnabled && localStorageAvailable) {
-    //     offline.save(result);
+     if (offineEnabled && localStorageAvailable) {
+         offline.save(result);
 
-    //     intervalToProcess = 6000;
-    //     if ((typeof data.intervalToProcess !== 'undefined') && (data.intervalToProcess) && (data.intervalToProcess >= 15000)) {
-    //         intervalToProcess = data.intervalToProcess;
-    //     }
+         intervalToProcess = 6000;
+         if ((typeof data.intervalToProcess !== 'undefined') && (data.intervalToProcess) && (data.intervalToProcess >= 15000)) {
+             intervalToProcess = data.intervalToProcess;
+         }
 
-    //     if (!petIntervalId) { // this checking prevents creating multiple interval IDs
-    //         petIntervalId = setInterval(this.checkNetworkAvailable, intervalToProcess);
-    //     }
-    // }
+         if (!petIntervalId) { // this checking prevents creating multiple interval IDs
+             petIntervalId = setInterval(this.checkNetworkAvailable, intervalToProcess);
+         }
+    }
 
     // LS not available or it means offline won't work even if enabled.
     if (!offineEnabled || !localStorageAvailable) {
@@ -3346,144 +3355,6 @@ function PetUserSchema() {
 }
 
 /**
- * @module PETracker/events/click
- * @name sendClickEvent
- * @description It is used to send event data to Tracking System.
- */
-/**
- * Sdk
- * @class PetEvent
- * @constructs Event params
- */
-function PetEvent() {
-    /**
-     * @member {Object} params
-     */
-    this.params = new PetEventParams().params;
-}
-
-/** @function
- * @lends PetEvent.prototype
- * @name track
- * @description This method collects the data from app, convert that data into specific format and send it to Tracking system
- * @param {Array} Input data from app
- * @param {Object} sdkParams
- * @param {Object} sdkErrors
- */
-PetEvent.prototype.track = function () {
-    // custom modules
-    var utilHelper = new PetUtilsHelper(),
-        process = new PetProcess(),
-
-    // variables
-        input = {},
-        additionalParams,
-        callback,
-        result,
-        schema,
-        schemaResult,
-        paramsIndex = Object.keys(this.params),
-        hasAdditionalParams = true,
-        sdkParams,
-        sdkErrors;
-
-    // getting sdk params and errors
-    sdkParams = utilHelper.clone(arguments[1]);
-    sdkErrors = utilHelper.clone(arguments[2]);
-
-    // formatting the inputs with parameters
-    result = utilHelper.getInput(arguments[0], paramsIndex, hasAdditionalParams);
-    input = result.input;
-    additionalParams = result.additionalParams;
-    callback = result.callback;
-
-    // schema validation
-    schema = new PetEventSchema().schema;
-    schemaResult = tv4.validateMultiple(input, schema, true);
-    if (!schemaResult.valid) {
-        if (sdkParams.debugMode) {
-            console.error((utilHelper.getErrorMessages(schemaResult.errors)).join(','));
-            return;
-        } else {
-            sdkErrors.event = utilHelper.getErrorMessages(schemaResult.errors);
-        }
-    }
-
-    // Process Event Data
-    process.event(sdkParams, sdkErrors, additionalParams, 'event', this.params, input, callback);
-};
-
-/**
- * @module PETracker/events/event/params
- * @name PetEventParams
- * @description It have the list of parameters which are used for event tracking
- */
-/**
- * Event Params
- * @class PetEventParams
- * @constructs {Object} parameters
- * @description Event tracking parameters
- */
-
-function PetEventParams() {
-    /**
-     * @member {object}
-     */
-    this.params = {
-        // category of event
-        eventCategory: null,
-
-        // action of event: click, mouse move, scroll
-        eventAction: null,
-
-        // label of the DOM element
-        eventLabel: null,
-
-        // value for the event
-        eventValue: null
-    };
-}
-
-/**
- * @module PETracker/events/event/schema
- * @name EventSchema
- * @description JSON Schema validating the event parameters
- */
-/**
- * EventSchema
- * @class PetEventSchema
- * @constructs {Object} schema
- * @description Event Schema
- */
-
-function PetEventSchema() {
-    /**
-     * @member {object}
-     */
-    this.schema = {
-        title: 'Event Parameter Schema',
-        id: '/event',
-        type: 'object',
-        properties: {
-            eventCategory: {
-                type: 'string'
-            },
-            eventAction: {
-                type: 'string'
-            },
-            eventLabel: {
-                type: 'string'
-            },
-            eventValue: {
-                type: 'integer'
-            }
-        },
-        additionalProperties: true,
-        required: ['eventCategory', 'eventAction']
-    };
-}
-
-/**
  * @module PETracker/events/sendMessage
  * @name sendEvent
  * @description It is a generic event to send tracking data
@@ -3513,8 +3384,8 @@ function catchSchemaError(data){
         console.error("Payload has not been sent due to schema valaidation error.",data.error);
     }
     else{
-        var ajaxRequest = new PetRequest();
-        var url = autobahUrls.collection+"/"+this.trackerObject.sdkParams.username;
+        var ajaxRequest = new PetRequest(this.trackerObject.sdkParams);
+        var url = autobahUrls.collection+"/"+this.trackerObject.sdkParams.trackingID;
         ajaxRequest.send(url, data);
     }
 };
@@ -3542,17 +3413,28 @@ function autobahnSchemaCookieValidator(event){
     return false;
 };
 
-function autobahnValidator(validationFlag, event, callback){
+function autobahnValidator(eventParams, event, callback){
     
     if(event.namespace && event.messageTypeCode){
+
+        if(!eventParams.schemaValidation && !eventParams.autofill){
+            if(typeof callback == "function"){
+                callback(null, event);
+                return;
+            }
+        }
 
         var schemaFoundInCookie = autobahnSchemaCookieValidator(event);
 
         if(schemaFoundInCookie){
 
-            event.payload = autofillParameters(event.payload, schemaFoundInCookie);
+            if(eventParams.autofill){
 
-            if(validationFlag){
+                event.payload = autofillParameters(event.payload, schemaFoundInCookie);    
+            }
+            
+
+            if(eventParams.schemaValidation){
 
                 var schemaValidationResult = tv4.validateMultiple(event.payload, schemaFoundInCookie, true);
 
@@ -3571,7 +3453,7 @@ function autobahnValidator(validationFlag, event, callback){
         }
         var urlFormatter = autobahUrls.schema + '/';
         urlFormatter += event.namespace + '/' + event.messageTypeCode+'/'+(event.messageVersion ? event.messageVersion : 'latest');
-        var ajax = new PetRequest();
+        var ajax = new PetRequest(eventParams);
         ajax.send(urlFormatter, {}, null, function(err, data){
             if(err && err.error != 200){
                 if(typeof callback == "function"){
@@ -3582,12 +3464,15 @@ function autobahnValidator(validationFlag, event, callback){
 
                 data = data.response;
 
-                event.payload = autofillParameters(event.payload, data.schemaDefinition);
+                if(eventParams.autofill){
+                    event.payload = autofillParameters(event.payload, data.schemaDefinition);
+                }
 
+                
                 var schema = data.schemaDefinition, schemaValidationResult = tv4.validateMultiple(event.payload, schema, true);
                 var cookie = new PetCookie();
                 cookie.create(event.namespace+"|"+event.messageTypeCode+"|"+(event.messageVersion? event.messageVersion : 'latest'),'', 180 * 60 * 1000, schema); 
-                if(!schemaValidationResult.valid && validationFlag){
+                if(!schemaValidationResult.valid && eventParams.schemaValidation){
                     event.error = schemaValidationResult;
                     catchSchemaError(event);
                     return false;
@@ -3616,8 +3501,7 @@ function autobahnValidator(validationFlag, event, callback){
  */
 PetMessage.prototype.track = function () {
     // Dependencies
-    var ajax = new PetRequest(),
-        dataClone = arguments[1],
+    var dataClone = arguments[1],
         eventUrl = arguments[0],
         options = arguments[2],
         user_callback = arguments[3],
@@ -3647,14 +3531,14 @@ PetMessage.prototype.track = function () {
         delete format_payload.payload.messageTypeCode;
     }
     
+    var self = this;
         
-    autobahnValidator(this.eventParams.sdkParams.needsSchemaValidation,
-        format_payload, function(err, validatedData){
+    autobahnValidator(this.eventParams.sdkParams,format_payload, function(err, validatedData){
             if(err){
                 console.error(err);
             }
             else{
-                var ajax = new PetRequest()
+                var ajax = new PetRequest(self.eventParams.sdkParams)
                 ,url = autobahUrls.messaging+'/'+eventUrl
                 ,data = eventData;
 
@@ -3789,335 +3673,6 @@ function PetLoginMessageSchema() {
 }
 
 /**
- * @module PETracker/events/pageview/handler
- * @name autotracking:pageview
- * @description It is used to detect and track the pageview event
- */
-/**
- * Sdk
- * @class PetPageviewHandler
- */
-function PetPageviewHandler() {
-    // constructor code here
-}
-
-/** @function
- * @lends PetPageviewHandler.prototype
- * @name track
- * @description It detects and track the page view event
- */
-PetPageviewHandler.prototype.track = function () {
-    // variables
-    var oldLocation = location.href,
-        sdk = arguments[0];
-
-    if (typeof angular !== 'undefined') {
-        setInterval(function () {
-            if (oldLocation !== location.href) {
-                sdk.sendPageview();
-                oldLocation = location.href;
-            }
-        }, 1000); // checks every 1 second url changes
-    } else if (typeof window.onhashchange !== 'undefined') {
-        // enable hanlder
-        window.onhashchange = function () {
-            sdk.sendPageview();
-        };
-    }
-};
-
-/**
- * @module PETracker/events/pageview
- * @name sendPageview
- * @description It is used to send pageview data to Tracking System.
- */
-/**
- * Sdk
- * @class PetPageview
- * @constructs Pageview params
- */
-function PetPageview() {
-    /**
-     * @member {Object} params
-     */
-    this.params = new PetPageviewParams().params;
-}
-
-/** @function
- * @lends PetPageview.prototype
- * @name track
- * @description This method collects the data from app, convert that data into specific format and send it to Tracking system
- * @param {Array} Input data from app
- * @param {Object} sdkParams
- * @param {Object} sdkErrors
- */
-PetPageview.prototype.track = function () {
-    // custom modules
-    var utilHelper = new PetUtilsHelper(),
-        process = new PetProcess(),
-        cookieHelper = new PetCookie(),
-
-    // variables
-        input = {},
-        additionalParams,
-        callback,
-        result,
-        schema,
-        schemaResult,
-        paramsIndex = Object.keys(this.params),
-        hasAdditionalParams = true,
-        sdkParams,
-        sdkErrors;
-
-    // getting sdk params and errors
-    sdkParams = utilHelper.clone(arguments[1]);
-    sdkErrors = utilHelper.clone(arguments[2]);
-
-    // formatting the inputs with parameters
-    result = utilHelper.getInput(arguments[0], paramsIndex, hasAdditionalParams);
-    input = utilHelper.removeNullParameters(result.input);
-    additionalParams = result.additionalParams;
-    callback = result.callback;
-
-    // schema validation
-    schema = new PetPageviewSchema().schema;
-    schemaResult = tv4.validateMultiple(input, schema, true);
-    if (!schemaResult.valid) {
-        if (sdkParams.debugMode) {
-            console.error((utilHelper.getErrorMessages(schemaResult.errors)).join(','));
-            return;
-        } else {
-            sdkErrors.pageview = utilHelper.getErrorMessages(schemaResult.errors);
-        }
-    }
-
-    // Process Event Data
-    sdkParams.pageviewIndex = cookieHelper.pageviewIndex(sdkParams.userID);
-    process.event(sdkParams, sdkErrors, additionalParams, 'pageview', this.params, input, callback);
-};
-
-/**
- * @module PETracker/events/pageview/params
- * @name PageviewParams
- * @description It have the list of parameters which are used for Pageview tracking
- */
-/**
- * PageviewParams
- * @class PetPageviewParams
- * @constructs {Object} parameters
- * @description Pageview tracking parameters
- */
-
-function PetPageviewParams() {
-    /**
-     * @member {object}
-     */
-    this.params = {
-        // Document Location ex: http://www.example.com/home
-        documentLocation: null,
-
-        // Document Hostname ex: www.example.com
-        documentHost: null,
-
-        // Document page ex: /home
-        documentPage: null,
-
-        // Document Title.
-        documentTitle: null
-    };
-}
-
-/**
- * @module PETracker/events/pageview/schema
- * @name PageviewSchema
- * @description JSON Schema validating the pageview parameters
- */
-/**
- * PageviewSchema
- * @class PetPageviewSchema
- * @constructs {Object} schema
- * @description Pageview Schema
- */
-
-function PetPageviewSchema() {
-    /**
-     * @member {object}
-     */
-    this.schema = {
-        title: 'Pageview Parameter Schema',
-        id: '/pageview',
-        type: 'object',
-        properties: {
-            documentLocation: {
-                type: 'string',
-                format: 'url'
-            },
-            documentHost: {
-                type: 'string'
-            },
-            documentPage: {
-                type: 'string'
-            },
-            documentTitle: {
-                type: 'string'
-            }
-        },
-        required: [],
-        additionalProperties: true
-    };
-}
-
-/**
- * @module PETracker/events/screenview
- * @name sendScreenview
- * @description It is used to send screenview event data to Tracking System.
- */
-/**
- * Sdk
- * @class PetScreenview
- * @constructs Screen View event params
- */
-function PetScreenview() {
-    /**
-     * @member {Object} params
-     */
-    this.params = new PetScreenviewParams().params;
-}
-
-/** @function
- * @lends PetScreenview.prototype
- * @name track
- * @description This method collects the data from app, convert that data into specific format and send it to Tracking system
- * @param {Array} Input data from app
- * @param {Object} sdkParams
- * @param {Object} sdkErrors
- */
-PetScreenview.prototype.track = function () {
-    // custom modules
-    var utilHelper = new PetUtilsHelper(),
-        process = new PetProcess(),
-
-    // variables
-        input = {},
-        additionalParams,
-        callback,
-        result,
-        schema,
-        schemaResult,
-        paramsIndex = Object.keys(this.params),
-        hasAdditionalParams = true,
-        sdkParams,
-        sdkErrors;
-
-    // getting sdk params and errors
-    sdkParams = utilHelper.clone(arguments[1]);
-    sdkErrors = utilHelper.clone(arguments[2]);
-
-    // formatting the inputs with parameters
-    result = utilHelper.getInput(arguments[0], paramsIndex, hasAdditionalParams);
-    input = result.input;
-    additionalParams = result.additionalParams;
-    callback = result.callback;
-
-    if (Object.keys(input).length === 1) {
-        if (typeof sdkParams.appName !== 'undefined') {
-            input.appName = sdkParams.appName;
-        }
-    }
-
-    // schema validation
-    schema = new PetScreenviewSchema().schema;
-    schemaResult = tv4.validateMultiple(input, schema, true);
-    if (!schemaResult.valid) {
-        if (sdkParams.debugMode) {
-            console.error((utilHelper.getErrorMessages(schemaResult.errors)).join(','));
-            return;
-        } else {
-            sdkErrors.screenview = utilHelper.getErrorMessages(schemaResult.errors);
-        }
-    }
-
-    // Process Event Data
-    process.event(sdkParams, sdkErrors, additionalParams, 'screenview', this.params, input, callback);
-};
-
-/**
- * @module PETracker/events/screenview/params
- * @name PetSreenviewParams
- * @description It have the list of parameters which are used for screenview event tracking
- */
-/**
- * PageviewParams
- * @class PetScreenviewParams
- * @constructs {Object} parameters
- * @description ScreenView event tracking parameters
- */
-
-function PetScreenviewParams() {
-    /**
-     * @member {object}
-     */
-    this.params = {
-        // screen name :: active screen name
-        screenName: null,
-
-        // application name
-        appName: null,
-
-        // application id
-        appID: null,
-
-        // application version
-        appVersion: null,
-
-        // application installer id
-        appInstallerID: null
-    };
-}
-
-/**
- * @module PETracker/events/screenview/schema
- * @name ScreenviewSchema
- * @description JSON Schema validating the screen view event parameters
- */
-/**
- * ScreenviewSchema
- * @class PetScreenviewSchema
- * @constructs {Object} schema
- * @description Screen view event Schema
- */
-
-function PetScreenviewSchema() {
-    /**
-     * @member {object}
-     */
-    this.schema = {
-        title: 'Screen View Event Parameter Schema',
-        id: '/screenview',
-        type: 'object',
-        properties: {
-            screenName: {
-                type: 'string'
-            },
-            appName: {
-                type: 'string'
-            },
-            appID: {
-                type: ['string', 'number']
-            },
-            appVersion: {
-                type: ['string', 'number']
-            },
-            appInstallerID: {
-                type: 'string'
-            }
-        },
-        additionalProperties: true,
-        required: ['appName', 'screenName']
-    };
-}
-
-/**
  * @module PETracker/init
  * @name init
  * @description It is used to initialize the Tracker SDK Object in Application
@@ -4234,12 +3789,12 @@ PetSdk.prototype.init = function () {
     //cookieHelper.create('__PET', sdkParams.cookiePrefix, sdkParams.cookieDomainName);
     // initialize the tracker object
 
-    this.tracker = {};
+    //this.tracker = {};
     var self = this;
     //tracker.enableAutoTracking(sdkParams.autotracking);
-
+    //console.log(sdkParams);
     window.trackingID  = arguments[0];
-    self = utilHelper.merge(self, new PetTracker(sdkParams, sdkErrors));
+    return utilHelper.merge(self, new PetTracker(sdkParams, sdkErrors));
 };
 
 /**
