@@ -1,8 +1,120 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <script type="text/javascript" src="./dist/tracker4.0.2.js"></script>
-    </head>
-    <body style="text-align:center;">
-<h1>GSE Autobahn Tracker</h1>
-    </body>
+<head>
+	<title>Autobahn SDK :: Demo Page</title>
+	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script type="text/javascript" src="./dist/tracker4.0.2.js"></script>
+</head>
+<body>
+
+	<div class='container'>
+		<div class='page-header'>
+			<h4>GSE Autobahn Tracker</h4>
+		</div>
+
+		<div class='col-md-12'>
+			<div class='row'>
+				<h4> Tracker SDK Initialization</h4> <br>
+				<form method="post" action="/">
+					<table class='table table-horizontal'>
+						<tr>
+							<th class="text-center">
+								Tracking ID
+							</th>
+							<td>
+								<input type="text" name="appId" value="PE-APP-1847" id="appId" class="form-control">
+							</td>
+						</tr>
+						<tr>
+								<th class="text-center">
+									Originating System Code
+								</th>
+								<td>
+										<input type="text" name="system" value="GSE Autobahn Tracker" id="systemcode" class="form-control" placeholder="Originating System Code">
+								</td>
+							</tr>
+						<tr>
+							<th class="text-center">
+								Configurations
+							</th>
+							<td>
+								<label class="" for="schemavalidation">
+									<input type="checkbox" name="schemavalidation" id="schemavalidation" checked="true"> Schema Validation
+								</label> <br>
+								<label class="" for="autofill">
+									<input type="checkbox" name="autofill" id="autofill" checked="true"> Autofill
+								</label> <br><br>
+								<input type="text" name="namespace" value="" id="namespace" class="form-control" placeholder="Namespace Name"> <br>
+								<input type="text" name="messageversion" value="" id="messageVersion" class="form-control" placeholder="Message Version"> <br>
+							</td>
+						</tr>
+						<tr>
+							<th colspan="2" class="text-center">
+								<button type="button" class="btn btn-success" id="init"> Initialize Tracker SDK </button>
+							</th>
+						</tr>
+					</table>
+				</form>
+			</div>
+		</div>
+
+		<div class="col-md-12">
+			<div class="col-md-6">
+				<h4 class="text-info">Send Event</h4>
+				<p>Payload</p>
+				<textarea class="form-control" id="event-data"></textarea><br>
+				<p>Configurations</p>
+				<textarea class="form-control" id="event-configurations"></textarea><br>
+				<button class="btn btn-info" id="eventTrack">Send Event</button>
+			</div>
+			<div class="col-md-6">
+				<h4 class="text-primary">Send Activity</h4>
+				<p>Payload</p>
+				<textarea class="form-control" id="activity-data"></textarea><br>
+				<p>Configurations</p>
+				<textarea class="form-control" id="activity-configurations"></textarea><br>
+				<button class="btn btn-primary" id="activityTrack">Send Activity</button>
+			</div>
+		</div>
+	</div>
+
+
+	<script	src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+	<script>
+		var trackerObject = null;
+		$(document).ready(function() {
+			$('#init').click(function() {
+				var appID = document.querySelector("#appId").value;
+				var namespace = document.querySelector("#namespace").value;
+				var messageversion = document.querySelector("#messageVersion").value;
+				var schemavalidation = document.querySelector("#schemavalidation").value;
+				var autofill = document.querySelector("#autofill").value;
+				var code = document.querySelector("#systemcode").value;
+
+				window.trackerObject = PETracker.init(appID, {
+					schemaValidation: schemavalidation,
+					autofill: autofill,
+					namespace: namespace,
+					messageVersion: messageversion,
+					originatingSystemCode: code
+				});
+				alert('Tracker Initialized');
+			});
+
+			$('#eventTrack').click(function() {
+				var payload = document.querySelector("#event-data").value;
+				var config = document.querySelector("#event-configurations").value || "{}";
+				window.trackerObject.sendEvent(JSON.parse(payload), JSON.parse(config))
+			});
+
+			$('#activityTrack').click(function() {
+				var payload = document.querySelector("#activity-data").value;
+				var config = document.querySelector("#activity-configurations").value || "{}";
+				window.trackerObject.sendActivity(JSON.parse(payload), JSON.parse(config))
+			});
+		});
+	</script>
+
+</body>
 </html>

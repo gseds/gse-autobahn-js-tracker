@@ -16,7 +16,7 @@ var petIntervalId = null;
  * PetCookie
  * @class PetRequest
  */
-function PetRequest() {
+function PetRequest(trackerObject) {
     /**
      * @member {Object} tracking system receiver api URLs
      */
@@ -27,6 +27,8 @@ function PetRequest() {
         production: 'PRODUCTION_RECEIVER_URL',
         defaultUrl: 'DEFAULT_RECEIVER_URL'
     };
+
+    this.trackerObject = trackerObject || {};
 
 }
 
@@ -118,18 +120,18 @@ PetRequest.prototype.send = function () {
     // }
 
     // if LS available, enable interval-based data processing
-    // if (offineEnabled && localStorageAvailable) {
-    //     offline.save(result);
+     if (offineEnabled && localStorageAvailable) {
+         offline.save(result);
 
-    //     intervalToProcess = TRACKING_TIME_INTERVAL;
-    //     if ((typeof data.intervalToProcess !== 'undefined') && (data.intervalToProcess) && (data.intervalToProcess >= 15000)) {
-    //         intervalToProcess = data.intervalToProcess;
-    //     }
+         intervalToProcess = TRACKING_TIME_INTERVAL;
+         if ((typeof data.intervalToProcess !== 'undefined') && (data.intervalToProcess) && (data.intervalToProcess >= 15000)) {
+             intervalToProcess = data.intervalToProcess;
+         }
 
-    //     if (!petIntervalId) { // this checking prevents creating multiple interval IDs
-    //         petIntervalId = setInterval(this.checkNetworkAvailable, intervalToProcess);
-    //     }
-    // }
+         if (!petIntervalId) { // this checking prevents creating multiple interval IDs
+             petIntervalId = setInterval(this.checkNetworkAvailable, intervalToProcess);
+         }
+    }
 
     // LS not available or it means offline won't work even if enabled.
     if (!offineEnabled || !localStorageAvailable) {

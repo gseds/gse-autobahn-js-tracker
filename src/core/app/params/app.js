@@ -49,11 +49,13 @@ function PetAppParams() {
         // Application Environment
         environment: 'production',
 
+        offlineSupport: true,
+
         // Cookie Domain Name
-        cookieDomainName: '',
+        cookieDomainName: 'autobahn',
 
         // Cookie Prefix
-        cookiePrefix: '',
+        cookiePrefix: 'gse',
 
         // Interaction Type | Tracking Event Type
         interactionType: null,

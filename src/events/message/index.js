@@ -30,7 +30,7 @@ function catchSchemaError(data){
         console.error("Payload has not been sent due to schema valaidation error.",data.error);
     }
     else{
-        var ajaxRequest = new PetRequest();
+        var ajaxRequest = new PetRequest(this.trackerObject.sdkParams);
         var url = autobahUrls.collection+"/"+this.trackerObject.sdkParams.trackingID;
         ajaxRequest.send(url, data);
     }
@@ -59,11 +59,11 @@ function autobahnSchemaCookieValidator(event){
     return false;
 };
 
-function autobahnValidator(schemaValidation, autofill, event, callback){
+function autobahnValidator(eventParams, event, callback){
     
     if(event.namespace && event.messageTypeCode){
 
-        if(!schemaValidation && !autofill){
+        if(!eventParams.schemaValidation && !eventParams.autofill){
             if(typeof callback == "function"){
                 callback(null, event);
                 return;
@@ -74,13 +74,13 @@ function autobahnValidator(schemaValidation, autofill, event, callback){
 
         if(schemaFoundInCookie){
 
-            if(autofill){
+            if(eventParams.autofill){
 
                 event.payload = autofillParameters(event.payload, schemaFoundInCookie);    
             }
             
 
-            if(schemaValidation){
+            if(eventParams.schemaValidation){
 
                 var schemaValidationResult = tv4.validateMultiple(event.payload, schemaFoundInCookie, true);
 
@@ -99,7 +99,7 @@ function autobahnValidator(schemaValidation, autofill, event, callback){
         }
         var urlFormatter = autobahUrls.schema + '/';
         urlFormatter += event.namespace + '/' + event.messageTypeCode+'/'+(event.messageVersion ? event.messageVersion : 'latest');
-        var ajax = new PetRequest();
+        var ajax = new PetRequest(eventParams);
         ajax.send(urlFormatter, {}, null, function(err, data){
             if(err && err.error != 200){
                 if(typeof callback == "function"){
@@ -110,7 +110,7 @@ function autobahnValidator(schemaValidation, autofill, event, callback){
 
                 data = data.response;
 
-                if(autofill){
+                if(eventParams.autofill){
                     event.payload = autofillParameters(event.payload, data.schemaDefinition);
                 }
 
@@ -118,7 +118,7 @@ function autobahnValidator(schemaValidation, autofill, event, callback){
                 var schema = data.schemaDefinition, schemaValidationResult = tv4.validateMultiple(event.payload, schema, true);
                 var cookie = new PetCookie();
                 cookie.create(event.namespace+"|"+event.messageTypeCode+"|"+(event.messageVersion? event.messageVersion : 'latest'),'', 180 * 60 * 1000, schema); 
-                if(!schemaValidationResult.valid && schemaValidation){
+                if(!schemaValidationResult.valid && eventParams.schemaValidation){
                     event.error = schemaValidationResult;
                     catchSchemaError(event);
                     return false;
@@ -147,8 +147,7 @@ function autobahnValidator(schemaValidation, autofill, event, callback){
  */
 PetMessage.prototype.track = function () {
     // Dependencies
-    var ajax = new PetRequest(),
-        dataClone = arguments[1],
+    var dataClone = arguments[1],
         eventUrl = arguments[0],
         options = arguments[2],
         user_callback = arguments[3],
@@ -178,14 +177,14 @@ PetMessage.prototype.track = function () {
         delete format_payload.payload.messageTypeCode;
     }
     
+    var self = this;
         
-    autobahnValidator(this.eventParams.sdkParams.schemaValidation,this.eventParams.sdkParams.autofill,
-        format_payload, function(err, validatedData){
+    autobahnValidator(this.eventParams.sdkParams,format_payload, function(err, validatedData){
             if(err){
                 console.error(err);
             }
             else{
-                var ajax = new PetRequest()
+                var ajax = new PetRequest(self.eventParams.sdkParams)
                 ,url = autobahUrls.messaging+'/'+eventUrl
                 ,data = eventData;
 

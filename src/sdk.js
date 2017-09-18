@@ -102,7 +102,7 @@ PetSdk.prototype.init = function () {
     // initialize the tracker object
 
     //this.tracker = {};
-    ///var self = this;
+    var self = this;
     //tracker.enableAutoTracking(sdkParams.autotracking);
     //console.log(sdkParams);
     window.trackingID  = arguments[0];
