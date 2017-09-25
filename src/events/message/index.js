@@ -30,9 +30,9 @@ function catchSchemaError(data){
         console.error("Payload has not been sent due to schema valaidation error.",data.error);
     }
     else{
-        var ajaxRequest = new PetRequest(this.trackerObject.sdkParams);
+        var ajaxRequest = new PetRequest();
         var url = autobahUrls.collection+"/"+this.trackerObject.sdkParams.trackingID;
-        ajaxRequest.send(url, data);
+        ajaxRequest.send(url, data, {offlineEnabled: false, environment: this.trackerObject.sdkParams.environment},false);
     }
 };
 
@@ -43,6 +43,9 @@ function autofillParameters(data, schema){
             if(this.trackerObject.sdkParams[key]){
                 data[key] = data[key] || this.trackerObject.sdkParams[key];
             }
+        }
+        if(Object.keys(schema.properties).indexOf("messageTypeCode") == -1){
+            delete data.messageTypeCode;
         }
     }
     return data;
@@ -78,7 +81,11 @@ function autobahnValidator(eventParams, event, callback){
 
                 event.payload = autofillParameters(event.payload, schemaFoundInCookie);    
             }
-            
+            else{
+                if(Object.keys(schemaFoundInCookie.properties).indexOf("messageTypeCode") == -1){
+                    delete event.payload.messageTypeCode;
+                }
+            }
 
             if(eventParams.schemaValidation){
 
@@ -100,7 +107,7 @@ function autobahnValidator(eventParams, event, callback){
         var urlFormatter = autobahUrls.schema + '/';
         urlFormatter += event.namespace + '/' + event.messageTypeCode+'/'+(event.messageVersion ? event.messageVersion : 'latest');
         var ajax = new PetRequest(eventParams);
-        ajax.send(urlFormatter, {}, null, function(err, data){
+        ajax.send(urlFormatter, {}, {offlineEnabled: false,environment: eventParams.environment}, function(err, data){
             if(err && err.error != 200){
                 if(typeof callback == "function"){
                     callback(err);
@@ -112,6 +119,11 @@ function autobahnValidator(eventParams, event, callback){
 
                 if(eventParams.autofill){
                     event.payload = autofillParameters(event.payload, data.schemaDefinition);
+                }
+                else{
+                    if(Object.keys(data.schemaDefinition.properties).indexOf("messageTypeCode") == -1){
+                        delete event.payload.messageTypeCode;
+                    }
                 }
 
                 
@@ -172,10 +184,10 @@ PetMessage.prototype.track = function () {
         return false;
     }
 
-    if(format_payload && format_payload.payload && format_payload.payload.messageTypeCode){
+    // if(format_payload && format_payload.payload && format_payload.payload.messageTypeCode){
 
-        delete format_payload.payload.messageTypeCode;
-    }
+    //     delete format_payload.payload.messageTypeCode;
+    // }
     
     var self = this;
         
@@ -184,11 +196,10 @@ PetMessage.prototype.track = function () {
                 console.error(err);
             }
             else{
-                var ajax = new PetRequest(self.eventParams.sdkParams)
+                var ajax = new PetRequest()
                 ,url = autobahUrls.messaging+'/'+eventUrl
                 ,data = eventData;
-
-                ajax.send(url, data, user_callback);
+                ajax.send(url, data,{offlineEnabled: false,environment: self.eventParams.sdkParams.environment}, user_callback);
             }
     });
 

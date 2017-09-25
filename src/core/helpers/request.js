@@ -27,9 +27,6 @@ function PetRequest(trackerObject) {
         production: 'PRODUCTION_RECEIVER_URL',
         defaultUrl: 'DEFAULT_RECEIVER_URL'
     };
-
-    this.trackerObject = trackerObject || {};
-
 }
 
 /** @function
@@ -51,6 +48,7 @@ PetRequest.prototype.send = function () {
         errors = null, // Getting errors occurred in SDK
         callback = arguments[3], // Getting user's callback
         method = arguments[4], // Getting method for the Request
+        options = arguments[2],
 
     // local variables
         result,
@@ -58,7 +56,7 @@ PetRequest.prototype.send = function () {
         receiverUrl,
         cookieName = 'SDK_COOKIE_NAME',
         cookieValue = cookieHelper.get(cookieName),
-        offineEnabled = false,
+        offineEnabled = options && options.offineEnabled,
         localStorageAvailable = false,
         offline,
         intervalToProcess;
@@ -89,8 +87,8 @@ PetRequest.prototype.send = function () {
     //     }
     // }
 
-    if (typeof this.receiver[data.environment] !== 'undefined') {
-        receiverUrl = this.receiver[data.environment];
+    if (typeof this.receiver[options.environment] !== 'undefined') {
+        receiverUrl = this.receiver[options.environment];
     } else {
         receiverUrl = this.receiver.defaultUrl;
     }
@@ -102,9 +100,10 @@ PetRequest.prototype.send = function () {
         offline = new PetOffline();
     }
 
-    if ((localStorageAvailable) && (typeof data.offlineSupport !== 'undefined') && (data.offlineSupport)) {
-        offineEnabled = true;
-    }
+
+    // if ((localStorageAvailable) && (typeof data.offlineSupport !== 'undefined') && (data.offlineSupport)) {
+    //     offineEnabled = true;
+    // }
 
     // Tracking Data formation
     result = {
@@ -118,7 +117,6 @@ PetRequest.prototype.send = function () {
     // if (Object.keys(errors).length) {
     //     result.errors = errors;
     // }
-
     // if LS available, enable interval-based data processing
      if (offineEnabled && localStorageAvailable) {
          offline.save(result);
