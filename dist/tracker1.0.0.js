@@ -1,4 +1,4 @@
-/* Tracker SDK 4.0.2 */
+/* Tracker SDK 1.0.0 */
  (function() {
 /*
 Author: Geraint Luff and others
@@ -1677,7 +1677,7 @@ tv4.tv4 = tv4;
 return tv4; // used by _header.js to globalise.
 
 }));
-/* Tracker SDK 4.0.2 */
+/* Tracker SDK 1.0.0 */
  (function() {
 /**
  * @module PETracker/app/constants
@@ -1789,10 +1789,10 @@ function PetAppParams() {
         cookieExpiryTime: '165',
 
         // Tracking SDK Version
-        sdkVersion: '4.0.0',
+        sdkVersion: '1.0.0',
 
         // Current Tracker JS Version
-        jsVersion: '4.0.2',
+        jsVersion: '1.0.0',
 
         // Application Platform
         appPlatform: 'web',
