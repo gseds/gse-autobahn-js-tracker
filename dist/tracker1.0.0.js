@@ -3377,23 +3377,23 @@ function PetMessage(sdkParams) {
     };
 };
 
-function catchSchemaError(data){
-    if(this.trackerObject.sdkParams.debugMode){
+function catchSchemaError(data, sdkParams){
+    if(sdkParams.debugMode){
         console.error("Payload has not been sent due to schema valaidation error.",data.error);
     }
     else{
         var ajaxRequest = new PetRequest();
-        var url = autobahUrls.collection+"/"+this.trackerObject.sdkParams.trackingID;
-        ajaxRequest.send(url, data, {offlineEnabled: false, environment: this.trackerObject.sdkParams.environment},false);
+        var url = autobahUrls.collection+"/"+sdkParams.trackingID;
+        ajaxRequest.send(url, data, {offlineEnabled: false, environment: sdkParams.environment},false);
     }
 };
 
 
-function autofillParameters(data, schema){
+function autofillParameters(data, schema, sdkParams){
     if(schema.properties){
         for(var key in schema.properties){
-            if(this.trackerObject.sdkParams[key]){
-                data[key] = data[key] || this.trackerObject.sdkParams[key];
+            if(sdkParams[key]){
+                data[key] = data[key] || sdkParams[key];
             }
         }
         if(Object.keys(schema.properties).indexOf("messageTypeCode") == -1){
@@ -3431,7 +3431,7 @@ function autobahnValidator(eventParams, event, callback){
 
             if(eventParams.autofill){
 
-                event.payload = autofillParameters(event.payload, schemaFoundInCookie);    
+                event.payload = autofillParameters(event.payload, schemaFoundInCookie, eventParams);    
             }
             else{
                 if(Object.keys(schemaFoundInCookie.properties).indexOf("messageTypeCode") == -1){
@@ -3445,7 +3445,7 @@ function autobahnValidator(eventParams, event, callback){
 
                 if(!schemaValidationResult.valid){
                     event.error = schemaValidationResult;
-                    catchSchemaError(event);
+                    catchSchemaError(event, eventParams);
                     return false;
                 }
                 
@@ -3470,7 +3470,7 @@ function autobahnValidator(eventParams, event, callback){
                 data = data.response;
 
                 if(eventParams.autofill){
-                    event.payload = autofillParameters(event.payload, data.schemaDefinition);
+                    event.payload = autofillParameters(event.payload, data.schemaDefinition, eventParams);
                 }
                 else{
                     if(Object.keys(data.schemaDefinition.properties).indexOf("messageTypeCode") == -1){
@@ -3484,7 +3484,7 @@ function autobahnValidator(eventParams, event, callback){
                 cookie.create(event.namespace+"|"+event.messageTypeCode+"|"+(event.messageVersion? event.messageVersion : 'latest'),'', 180 * 60 * 1000, schema); 
                 if(!schemaValidationResult.valid && eventParams.schemaValidation){
                     event.error = schemaValidationResult;
-                    catchSchemaError(event);
+                    catchSchemaError(event, eventParams);
                     return false;
                 }
                 
