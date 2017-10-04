@@ -3415,10 +3415,10 @@ function autobahnSchemaCookieValidator(event){
 };
 
 function autobahnValidator(eventParams, event, callback){
-    
+
     if(event.namespace && event.messageTypeCode){
 
-        if(!eventParams.schemaValidation && !eventParams.autofill){
+        if(!eventParams.schemaValidation && !eventParams.autofill && event.messageVersion.toLowerCase() != "latest"){
             if(typeof callback == "function"){
                 callback(null, event);
                 return;
@@ -3429,19 +3429,23 @@ function autobahnValidator(eventParams, event, callback){
 
         if(schemaFoundInCookie){
 
+            if(event.messageVersion.toLowerCase() == 'latest'){
+                event.messageVersion = schemaFoundInCookie.version;
+            }
+
             if(eventParams.autofill){
 
-                event.payload = autofillParameters(event.payload, schemaFoundInCookie, eventParams);    
+                event.payload = autofillParameters(event.payload, schemaFoundInCookie.schema, eventParams);    
             }
             else{
-                if(Object.keys(schemaFoundInCookie.properties).indexOf("messageTypeCode") == -1){
+                if(Object.keys(schemaFoundInCookie.schema.properties).indexOf("messageTypeCode") == -1){
                     delete event.payload.messageTypeCode;
                 }
             }
 
             if(eventParams.schemaValidation){
 
-                var schemaValidationResult = tv4.validateMultiple(event.payload, schemaFoundInCookie, true);
+                var schemaValidationResult = tv4.validateMultiple(event.payload, schemaFoundInCookie.schema, true);
 
                 if(!schemaValidationResult.valid){
                     event.error = schemaValidationResult;
@@ -3467,7 +3471,13 @@ function autobahnValidator(eventParams, event, callback){
             }
             else if(data && data.code == 200 && data.response){
 
+                var messageVersion = event.messageVersion;
+
                 data = data.response;
+
+                if(messageVersion.toLowerCase() == "latest"){
+                    event.messageVersion = data.version;
+                }
 
                 if(eventParams.autofill){
                     event.payload = autofillParameters(event.payload, data.schemaDefinition, eventParams);
@@ -3481,7 +3491,7 @@ function autobahnValidator(eventParams, event, callback){
                 
                 var schema = data.schemaDefinition, schemaValidationResult = tv4.validateMultiple(event.payload, schema, true);
                 var cookie = new PetCookie();
-                cookie.create(event.namespace+"|"+event.messageTypeCode+"|"+(event.messageVersion? event.messageVersion : 'latest'),'', 180 * 60 * 1000, schema); 
+                cookie.create(event.namespace+"|"+event.messageTypeCode+"|"+ (messageVersion ? messageVersion : 'latest'),'', (eventParams.cookieExpiryTime || 180) * 60 * 1000, {schema:schema, version:data.version}); 
                 if(!schemaValidationResult.valid && eventParams.schemaValidation){
                     event.error = schemaValidationResult;
                     catchSchemaError(event, eventParams);
@@ -3519,7 +3529,7 @@ PetMessage.prototype.track = function () {
     
     var format_payload = {
         "messageTypeCode": (dataClone && dataClone["messageTypeCode"]),
-        "messageVersion": (options && options["messageVersion"])  || this.eventParams.sdkParams["messageVersion"],
+        "messageVersion": (options && options["messageVersion"])  || this.eventParams.sdkParams["messageVersion"] || "latest",
         "actionType":"create",
         "namespace": (options && options["namespace"])  || this.eventParams.sdkParams["namespace"],
         "payload": dataClone || {}
