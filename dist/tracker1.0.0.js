@@ -2196,7 +2196,7 @@ PetGetDataSize.prototype.convertBytesToMB = function (num) {
  * @class PetOffline
  * @constructs offline configurations
  */
-function PetOffline() {
+function PetOffline(sdkParams) {
     this.peTrackerData = 'PETracker';
     this.getSize = new PetGetDataSize();
     this.store = new PetStorage();
@@ -2208,6 +2208,7 @@ function PetOffline() {
         production: '//api.english.com/autobahn',
         defaultUrl: '//devapi.english.com/autobahn'
     };
+    this.sdkParams = sdkParams;
     this.peEventData = null;
 }
 
@@ -2217,9 +2218,10 @@ function PetOffline() {
  * @description it stores the data into local storage
  * @param {Object} data
  */
-PetOffline.prototype.save = function (data) {
+PetOffline.prototype.save = function (data, type) {
     if (data) {
-        this.peEventData = this.store.get(this.peTrackerData);
+
+        this.peEventData = this.store.get(type);
 
         if (!this.peEventData) {
             this.peEventData = [data];
@@ -2227,7 +2229,7 @@ PetOffline.prototype.save = function (data) {
             this.peEventData.push(data);
         }
 
-        this.store.set(this.peTrackerData, this.peEventData);
+        this.store.set(type, this.peEventData);
     }
 };
 
@@ -2246,7 +2248,8 @@ PetOffline.prototype.checkData = function () {
         j,
         sdkData;
 
-    this.peEventData = this.store.get(this.peTrackerData);
+    this.peEventData = this.store.get("events"),
+    this.peActivityData = this.store.get("activities");
 
     if (this.peEventData) {
 
@@ -2272,7 +2275,35 @@ PetOffline.prototype.checkData = function () {
             sdkData = dataArr;
 
             indexEnd = i - 1;
-            this.send(indexStart, indexEnd, sdkData);
+            this.send(indexStart, indexEnd, sdkData, "events");
+        }
+    }
+
+    if (this.peActivityData) {
+
+        recordsChunkLimit = this.getAllowedDataChunk(this.peActivityData);
+        i = 0;
+
+        while (i < this.peActivityData.length) {
+            dataArr = [];
+            for (j = 0; j < recordsChunkLimit; j++) {
+
+                if (i >= this.peActivityData.length) {
+                    break;
+                }
+
+                dataArr.push(this.peActivityData[i]);
+                ++i;
+
+                if (j === 0) {
+                    indexStart = i - 1;
+                }
+            }
+
+            sdkData = dataArr;
+
+            indexEnd = i - 1;
+            this.send(indexStart, indexEnd, sdkData, "activities");
         }
     }
 };
@@ -2285,17 +2316,20 @@ PetOffline.prototype.checkData = function () {
  * @param {Number} indexEnd
  * @param {Object} sdkData
  */
-PetOffline.prototype.send = function (indexStart, indexEnd, sdkData) {
+PetOffline.prototype.send = function (indexStart, indexEnd, sdkData, type) {
     // local variables
     var receiverUrl,
         self = this,
         data,
         xmlhttp;
-    if (typeof this.receiver[sdkData[0].data.environment] !== 'undefined') {
-        receiverUrl = this.receiver[sdkData[0].data.environment];
+
+    if (typeof this.receiver[this.sdkParams.environment] !== 'undefined') {
+        receiverUrl = this.receiver[this.sdkParams.environment];
     } else {
         receiverUrl = this.receiver.defaultUrl;
     }
+
+    receiverUrl += "/collect/bulk/"+type;
 
     data = {
         trackingID: sdkData[0].data.trackingID,
@@ -2699,7 +2733,7 @@ var petIntervalId = null;
  * PetCookie
  * @class PetRequest
  */
-function PetRequest(trackerObject) {
+function PetRequest(sdkParams) {
     /**
      * @member {Object} tracking system receiver api URLs
      */
@@ -2710,6 +2744,8 @@ function PetRequest(trackerObject) {
         production: '//api.english.com/autobahn',
         defaultUrl: '//devapi.english.com/autobahn'
     };
+
+    this.sdkParams = sdkParams;
 }
 
 /** @function
@@ -2739,7 +2775,7 @@ PetRequest.prototype.send = function () {
         receiverUrl,
         cookieName = '__PET',
         cookieValue = cookieHelper.get(cookieName),
-        offineEnabled = options && options.offineEnabled,
+        offineEnabled = options && options.offlineEnabled,
         localStorageAvailable = false,
         offline,
         intervalToProcess;
@@ -2780,7 +2816,10 @@ PetRequest.prototype.send = function () {
         console.log('PETracker: no local storage found.');
     } else {
         localStorageAvailable = true;
-        offline = new PetOffline();
+        if(offineEnabled){
+            console.log(this.sdkParams);
+            offline = new PetOffline(this.sdkParams);
+        }
     }
 
 
@@ -2801,8 +2840,9 @@ PetRequest.prototype.send = function () {
     //     result.errors = errors;
     // }
     // if LS available, enable interval-based data processing
+
      if (offineEnabled && localStorageAvailable) {
-         offline.save(result);
+         offline.save(result, options.eventType);
 
          intervalToProcess = 6000;
          if ((typeof data.intervalToProcess !== 'undefined') && (data.intervalToProcess) && (data.intervalToProcess >= 15000)) {
@@ -2810,7 +2850,7 @@ PetRequest.prototype.send = function () {
          }
 
          if (!petIntervalId) { // this checking prevents creating multiple interval IDs
-             petIntervalId = setInterval(this.checkNetworkAvailable, intervalToProcess);
+             petIntervalId = setInterval(this.checkNetworkAvailable.bind(this), intervalToProcess);
          }
     }
 
@@ -2887,7 +2927,7 @@ PetRequest.prototype.sendXMLHTTP = function (url, eventData, data, method) {
  * @description It is used to send data to tracking system
  */
 PetRequest.prototype.checkNetworkAvailable = function () {
-    var offline = new PetOffline();
+    var offline = new PetOffline(this.sdkParams);
     offline.isNetworkAvailable();
 };
 
@@ -3382,7 +3422,7 @@ function catchSchemaError(data, sdkParams){
         console.error("Payload has not been sent due to schema valaidation error.",data.error);
     }
     else{
-        var ajaxRequest = new PetRequest();
+        var ajaxRequest = new PetRequest(sdkParams);
         var url = autobahUrls.collection+"/"+sdkParams.trackingID;
         ajaxRequest.send(url, data, {offlineEnabled: false, environment: sdkParams.environment},false);
     }
@@ -3558,10 +3598,10 @@ PetMessage.prototype.track = function () {
                 console.error(err);
             }
             else{
-                var ajax = new PetRequest()
+                var ajax = new PetRequest(self.eventParams.sdkParams)
                 ,url = autobahUrls.messaging+'/'+eventUrl
                 ,data = eventData;
-                ajax.send(url, data,{offlineEnabled: false,environment: self.eventParams.sdkParams.environment}, user_callback);
+                ajax.send(url, data,{offlineEnabled: self.eventParams.sdkParams.offlineEnabled,environment: self.eventParams.sdkParams.environment, eventType:eventUrl}, user_callback);
             }
     });
 

@@ -30,7 +30,7 @@ function catchSchemaError(data, sdkParams){
         console.error("Payload has not been sent due to schema valaidation error.",data.error);
     }
     else{
-        var ajaxRequest = new PetRequest();
+        var ajaxRequest = new PetRequest(sdkParams);
         var url = autobahUrls.collection+"/"+sdkParams.trackingID;
         ajaxRequest.send(url, data, {offlineEnabled: false, environment: sdkParams.environment},false);
     }
@@ -206,10 +206,10 @@ PetMessage.prototype.track = function () {
                 console.error(err);
             }
             else{
-                var ajax = new PetRequest()
+                var ajax = new PetRequest(self.eventParams.sdkParams)
                 ,url = autobahUrls.messaging+'/'+eventUrl
                 ,data = eventData;
-                ajax.send(url, data,{offlineEnabled: false,environment: self.eventParams.sdkParams.environment}, user_callback);
+                ajax.send(url, data,{offlineEnabled: self.eventParams.sdkParams.offlineEnabled,environment: self.eventParams.sdkParams.environment, eventType:eventUrl}, user_callback);
             }
     });
 

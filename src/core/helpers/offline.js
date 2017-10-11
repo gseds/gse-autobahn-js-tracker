@@ -10,7 +10,7 @@
  * @class PetOffline
  * @constructs offline configurations
  */
-function PetOffline() {
+function PetOffline(sdkParams) {
     this.peTrackerData = 'LOCAL_STORAGE_NAME';
     this.getSize = new PetGetDataSize();
     this.store = new PetStorage();
@@ -22,6 +22,7 @@ function PetOffline() {
         production: 'PRODUCTION_RECEIVER_URL',
         defaultUrl: 'DEFAULT_RECEIVER_URL'
     };
+    this.sdkParams = sdkParams;
     this.peEventData = null;
 }
 
@@ -31,9 +32,10 @@ function PetOffline() {
  * @description it stores the data into local storage
  * @param {Object} data
  */
-PetOffline.prototype.save = function (data) {
+PetOffline.prototype.save = function (data, type) {
     if (data) {
-        this.peEventData = this.store.get(this.peTrackerData);
+
+        this.peEventData = this.store.get(type);
 
         if (!this.peEventData) {
             this.peEventData = [data];
@@ -41,7 +43,7 @@ PetOffline.prototype.save = function (data) {
             this.peEventData.push(data);
         }
 
-        this.store.set(this.peTrackerData, this.peEventData);
+        this.store.set(type, this.peEventData);
     }
 };
 
@@ -60,7 +62,8 @@ PetOffline.prototype.checkData = function () {
         j,
         sdkData;
 
-    this.peEventData = this.store.get(this.peTrackerData);
+    this.peEventData = this.store.get("events"),
+    this.peActivityData = this.store.get("activities");
 
     if (this.peEventData) {
 
@@ -86,7 +89,35 @@ PetOffline.prototype.checkData = function () {
             sdkData = dataArr;
 
             indexEnd = i - 1;
-            this.send(indexStart, indexEnd, sdkData);
+            this.send(indexStart, indexEnd, sdkData, "events");
+        }
+    }
+
+    if (this.peActivityData) {
+
+        recordsChunkLimit = this.getAllowedDataChunk(this.peActivityData);
+        i = 0;
+
+        while (i < this.peActivityData.length) {
+            dataArr = [];
+            for (j = 0; j < recordsChunkLimit; j++) {
+
+                if (i >= this.peActivityData.length) {
+                    break;
+                }
+
+                dataArr.push(this.peActivityData[i]);
+                ++i;
+
+                if (j === 0) {
+                    indexStart = i - 1;
+                }
+            }
+
+            sdkData = dataArr;
+
+            indexEnd = i - 1;
+            this.send(indexStart, indexEnd, sdkData, "activities");
         }
     }
 };
@@ -99,17 +130,20 @@ PetOffline.prototype.checkData = function () {
  * @param {Number} indexEnd
  * @param {Object} sdkData
  */
-PetOffline.prototype.send = function (indexStart, indexEnd, sdkData) {
+PetOffline.prototype.send = function (indexStart, indexEnd, sdkData, type) {
     // local variables
     var receiverUrl,
         self = this,
         data,
         xmlhttp;
-    if (typeof this.receiver[sdkData[0].data.environment] !== 'undefined') {
-        receiverUrl = this.receiver[sdkData[0].data.environment];
+
+    if (typeof this.receiver[this.sdkParams.environment] !== 'undefined') {
+        receiverUrl = this.receiver[this.sdkParams.environment];
     } else {
         receiverUrl = this.receiver.defaultUrl;
     }
+
+    receiverUrl += "/collect/bulk/"+type;
 
     data = {
         trackingID: sdkData[0].data.trackingID,

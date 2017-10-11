@@ -16,7 +16,7 @@ var petIntervalId = null;
  * PetCookie
  * @class PetRequest
  */
-function PetRequest(trackerObject) {
+function PetRequest(sdkParams) {
     /**
      * @member {Object} tracking system receiver api URLs
      */
@@ -27,6 +27,8 @@ function PetRequest(trackerObject) {
         production: 'PRODUCTION_RECEIVER_URL',
         defaultUrl: 'DEFAULT_RECEIVER_URL'
     };
+
+    this.sdkParams = sdkParams;
 }
 
 /** @function
@@ -56,7 +58,7 @@ PetRequest.prototype.send = function () {
         receiverUrl,
         cookieName = 'SDK_COOKIE_NAME',
         cookieValue = cookieHelper.get(cookieName),
-        offineEnabled = options && options.offineEnabled,
+        offineEnabled = options && options.offlineEnabled,
         localStorageAvailable = false,
         offline,
         intervalToProcess;
@@ -97,7 +99,10 @@ PetRequest.prototype.send = function () {
         console.log('PETracker: no local storage found.');
     } else {
         localStorageAvailable = true;
-        offline = new PetOffline();
+        if(offineEnabled){
+            console.log(this.sdkParams);
+            offline = new PetOffline(this.sdkParams);
+        }
     }
 
 
@@ -118,8 +123,9 @@ PetRequest.prototype.send = function () {
     //     result.errors = errors;
     // }
     // if LS available, enable interval-based data processing
+
      if (offineEnabled && localStorageAvailable) {
-         offline.save(result);
+         offline.save(result, options.eventType);
 
          intervalToProcess = TRACKING_TIME_INTERVAL;
          if ((typeof data.intervalToProcess !== 'undefined') && (data.intervalToProcess) && (data.intervalToProcess >= 15000)) {
@@ -127,7 +133,7 @@ PetRequest.prototype.send = function () {
          }
 
          if (!petIntervalId) { // this checking prevents creating multiple interval IDs
-             petIntervalId = setInterval(this.checkNetworkAvailable, intervalToProcess);
+             petIntervalId = setInterval(this.checkNetworkAvailable.bind(this), intervalToProcess);
          }
     }
 
@@ -204,7 +210,7 @@ PetRequest.prototype.sendXMLHTTP = function (url, eventData, data, method) {
  * @description It is used to send data to tracking system
  */
 PetRequest.prototype.checkNetworkAvailable = function () {
-    var offline = new PetOffline();
+    var offline = new PetOffline(this.sdkParams);
     offline.isNetworkAvailable();
 };
 
