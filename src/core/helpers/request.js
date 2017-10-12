@@ -100,7 +100,6 @@ PetRequest.prototype.send = function () {
     } else {
         localStorageAvailable = true;
         if(offineEnabled){
-            console.log(this.sdkParams);
             offline = new PetOffline(this.sdkParams);
         }
     }

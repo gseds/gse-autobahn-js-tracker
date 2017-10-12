@@ -72,8 +72,12 @@ module.exports = function (grunt) {
                         to: '<%=global["cookie"]["expiry"] %>'
                     },
                     {
-                        from: 'LOCAL_STORAGE_NAME',
-                        to: '<%=global["localStorage"]["name"] %>'
+                        from: 'EVENT_LOCAL_STORAGE_NAME',
+                        to: '<%=global["localStorage"]["event"] %>'
+                    },
+                    {
+                        from: 'ACTIVITIES_LOCAL_STORAGE_NAME',
+                        to: '<%=global["localStorage"]["activities"] %>'
                     },
                     {
                         from: 'REMOTE_FILE_URL',

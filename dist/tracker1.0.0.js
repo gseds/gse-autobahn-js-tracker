@@ -2197,12 +2197,13 @@ PetGetDataSize.prototype.convertBytesToMB = function (num) {
  * @constructs offline configurations
  */
 function PetOffline(sdkParams) {
-    this.peTrackerData = 'PETracker';
+    this.eventStorageName = 'event';
+    this.activitiesStorageName = 'activities';
     this.getSize = new PetGetDataSize();
     this.store = new PetStorage();
     this.ajax = new PetRequest();
     this.receiver = {
-        development: '//devapi.english.com/autobahn',
+        development: '//localhost:1272/autobahn',
         test: '//testapi.english.com/autobahn',
         stage: '//stageapi.english.com/autobahn',
         production: '//api.english.com/autobahn',
@@ -2221,7 +2222,9 @@ function PetOffline(sdkParams) {
 PetOffline.prototype.save = function (data, type) {
     if (data) {
 
-        this.peEventData = this.store.get(type);
+        var storageName = (type == 'events') ? this.eventStorageName : this.activitiesStorageName;
+
+        this.peEventData = this.store.get(storageName);
 
         if (!this.peEventData) {
             this.peEventData = [data];
@@ -2229,7 +2232,7 @@ PetOffline.prototype.save = function (data, type) {
             this.peEventData.push(data);
         }
 
-        this.store.set(type, this.peEventData);
+        this.store.set(storageName, this.peEventData);
     }
 };
 
@@ -2248,8 +2251,8 @@ PetOffline.prototype.checkData = function () {
         j,
         sdkData;
 
-    this.peEventData = this.store.get("events"),
-    this.peActivityData = this.store.get("activities");
+    this.peEventData = this.store.get(this.eventStorageName),
+    this.peActivityData = this.store.get(this.activitiesStorageName);
 
     if (this.peEventData) {
 
@@ -2738,7 +2741,7 @@ function PetRequest(sdkParams) {
      * @member {Object} tracking system receiver api URLs
      */
     this.receiver = {
-        development: '//devapi.english.com/autobahn',
+        development: '//localhost:1272/autobahn',
         test: '//testapi.english.com/autobahn',
         stage: '//stageapi.english.com/autobahn',
         production: '//api.english.com/autobahn',
@@ -2817,7 +2820,6 @@ PetRequest.prototype.send = function () {
     } else {
         localStorageAvailable = true;
         if(offineEnabled){
-            console.log(this.sdkParams);
             offline = new PetOffline(this.sdkParams);
         }
     }

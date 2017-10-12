@@ -11,7 +11,8 @@
  * @constructs offline configurations
  */
 function PetOffline(sdkParams) {
-    this.peTrackerData = 'LOCAL_STORAGE_NAME';
+    this.eventStorageName = 'EVENT_LOCAL_STORAGE_NAME';
+    this.activitiesStorageName = 'ACTIVITIES_LOCAL_STORAGE_NAME';
     this.getSize = new PetGetDataSize();
     this.store = new PetStorage();
     this.ajax = new PetRequest();
@@ -35,7 +36,9 @@ function PetOffline(sdkParams) {
 PetOffline.prototype.save = function (data, type) {
     if (data) {
 
-        this.peEventData = this.store.get(type);
+        var storageName = (type == 'events') ? this.eventStorageName : this.activitiesStorageName;
+
+        this.peEventData = this.store.get(storageName);
 
         if (!this.peEventData) {
             this.peEventData = [data];
@@ -43,7 +46,7 @@ PetOffline.prototype.save = function (data, type) {
             this.peEventData.push(data);
         }
 
-        this.store.set(type, this.peEventData);
+        this.store.set(storageName, this.peEventData);
     }
 };
 
@@ -62,8 +65,8 @@ PetOffline.prototype.checkData = function () {
         j,
         sdkData;
 
-    this.peEventData = this.store.get("events"),
-    this.peActivityData = this.store.get("activities");
+    this.peEventData = this.store.get(this.eventStorageName),
+    this.peActivityData = this.store.get(this.activitiesStorageName);
 
     if (this.peEventData) {
 
