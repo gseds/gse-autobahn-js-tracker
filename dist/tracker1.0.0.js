@@ -2197,13 +2197,13 @@ PetGetDataSize.prototype.convertBytesToMB = function (num) {
  * @constructs offline configurations
  */
 function PetOffline(sdkParams) {
-    this.eventStorageName = 'event';
+    this.eventStorageName = 'events';
     this.activitiesStorageName = 'activities';
     this.getSize = new PetGetDataSize();
     this.store = new PetStorage();
     this.ajax = new PetRequest();
     this.receiver = {
-        development: '//localhost:1272/autobahn',
+        development: '//devapi.english.com/autobahn',
         test: '//testapi.english.com/autobahn',
         stage: '//stageapi.english.com/autobahn',
         production: '//api.english.com/autobahn',
@@ -2343,14 +2343,15 @@ PetOffline.prototype.send = function (indexStart, indexEnd, sdkData, type) {
 
     // Handling response from Receiver
     xmlhttp.onreadystatechange = function () {
+        var localStorageName  = type == "events" ? self.eventStorageName : self.activitiesStorageName;
         if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
 
-            var peEventsData = self.store.get(self.peTrackerData);
+            var peEventsData = self.store.get(localStorageName);
 
             if (peEventsData) {
                 if (peEventsData.length >= ++indexEnd) {
                     // delete all processed data from local storage.
-                    self.store.delete(self.peTrackerData);
+                    self.store.delete(localStorageName);
                 }
             }
         }
@@ -2370,7 +2371,7 @@ PetOffline.prototype.getAllowedDataChunk = function (peEventData) {
         tempSizeCheck,
         x;
 
-    recordsChunkLimit = 50,
+    recordsChunkLimit = 10,
     sizeAllowed = false;
 
     while (!sizeAllowed) {
@@ -2741,7 +2742,7 @@ function PetRequest(sdkParams) {
      * @member {Object} tracking system receiver api URLs
      */
     this.receiver = {
-        development: '//localhost:1272/autobahn',
+        development: '//devapi.english.com/autobahn',
         test: '//testapi.english.com/autobahn',
         stage: '//stageapi.english.com/autobahn',
         production: '//api.english.com/autobahn',
@@ -2846,7 +2847,7 @@ PetRequest.prototype.send = function () {
      if (offineEnabled && localStorageAvailable) {
          offline.save(result, options.eventType);
 
-         intervalToProcess = 6000;
+         intervalToProcess = 40000;
          if ((typeof data.intervalToProcess !== 'undefined') && (data.intervalToProcess) && (data.intervalToProcess >= 15000)) {
              intervalToProcess = data.intervalToProcess;
          }

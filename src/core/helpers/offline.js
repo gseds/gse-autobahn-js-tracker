@@ -157,14 +157,15 @@ PetOffline.prototype.send = function (indexStart, indexEnd, sdkData, type) {
 
     // Handling response from Receiver
     xmlhttp.onreadystatechange = function () {
+        var localStorageName  = type == "events" ? self.eventStorageName : self.activitiesStorageName;
         if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
 
-            var peEventsData = self.store.get(self.peTrackerData);
+            var peEventsData = self.store.get(localStorageName);
 
             if (peEventsData) {
                 if (peEventsData.length >= ++indexEnd) {
                     // delete all processed data from local storage.
-                    self.store.delete(self.peTrackerData);
+                    self.store.delete(localStorageName);
                 }
             }
         }
@@ -184,7 +185,7 @@ PetOffline.prototype.getAllowedDataChunk = function (peEventData) {
         tempSizeCheck,
         x;
 
-    recordsChunkLimit = 50,
+    recordsChunkLimit = 10,
     sizeAllowed = false;
 
     while (!sizeAllowed) {
