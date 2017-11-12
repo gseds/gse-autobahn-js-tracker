@@ -15,7 +15,7 @@ function PetTracker() {
     var generalParams = new PetGeneralParams().params,
         userParams = new PetUserParams().params,
 
-    // custom modules
+        // custom modules
         utilHelper = new PetUtilsHelper();
 
     // Tracker Properties
@@ -91,11 +91,11 @@ PetTracker.prototype.unsetProperty = function () {
     // local variables
     var paramName,
 
-    // parameters list
+        // parameters list
         appParams = new PetAppParams().params,
         generalParams = new PetGeneralParams().params,
 
-    // custom variables
+        // custom variables
         utilHelper = new PetUtilsHelper();
 
     // Check the parameter value
@@ -133,26 +133,6 @@ PetTracker.prototype.getVersion = function () {
 
 /** @function
  * @lends PETracker.prototype
- * @name sendPageview
- * @description It is used to trigger pageview event in Tracker SDK
- * @param {String} documentLocation
- * @param {String} documentHost
- * @param {String} documentPage
- * @param {String} documentTitle
- * @param {Object} additionalParams
- * @param {Function} callback
- */
-// PetTracker.prototype.sendPageview = function () {
-//     /*
-//      * @member {Object}
-//      */
-//     var sdkEvent = new PetPageview();
-
-//     sdkEvent.track(arguments, this.sdkParams, this.sdkErrors);
-// };
-
-/** @function
- * @lends PETracker.prototype
  * @name sendEvent
  * @description It is a generic method to send tracking data
  * @param {Object} Message Format
@@ -162,9 +142,8 @@ PetTracker.prototype.sendEvent = function () {
      * @member {Object}
      */
     var sdkEvent = new PetMessage(this.sdkParams);
-    sdkEvent.track('events',arguments[0], arguments[1], arguments[2]);
+    sdkEvent.track('events', arguments[0], arguments[1], arguments[2]);
 };
-
 
 /** @function
  * @lends PETracker.prototype
@@ -177,7 +156,7 @@ PetTracker.prototype.sendActivity = function () {
      * @member {Object}
      */
     var sdkEvent = new PetMessage(this.sdkParams);
-    sdkEvent.track('activities',arguments[0], arguments[1], arguments[2]);
+    sdkEvent.track('activities', arguments[0], arguments[1], arguments[2]);
 };
 
 /** @function
@@ -206,6 +185,7 @@ PetTracker.prototype.getValueFromCookie = function () {
                 return null;
             }
         } else {
+
             // Incorrect Arguments
             console.error('Incorrect arguments specified in cookie: ' + arguments);
             return null;

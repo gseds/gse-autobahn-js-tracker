@@ -48,20 +48,21 @@ PetSdk.prototype.init = function () {
     var utilHelper = new PetUtilsHelper(),
         cookieHelper = new PetCookie(),
         callback = arguments[2],
-    // local variables
+
+        // local variables
         appData = {
-                    trackingID: null
-                },
+            trackingID: null
+        },
         appSchema = new PetAppSchema().schema,
         appParams = new PetAppParams().params,
         sdkParams = {},
         sdkErrors = {},
         schemaResult = {},
-        tracker;
-    
-    if(typeof arguments[0] != "string")
-    {
-        console.error("App Id must be a valid string type..");
+        tracker,
+        self = this;
+
+    if (typeof arguments[0] !== 'string') {
+        console.error('App Id must be a valid string type..');
         return;
     }
 
@@ -77,14 +78,12 @@ PetSdk.prototype.init = function () {
                 appData = utilHelper.merge(appData, arguments[1]);
                 break;
         }
-    } else {
+    } else
         console.warn('Please provide credentials for accessing SDK.');
-    }
 
-   
     // schema validation
     schemaResult = tv4.validateMultiple(appData, appSchema, true);
-    
+
     if (!schemaResult.valid) {
         if (appData.debugMode) {
             console.error((utilHelper.getErrorMessages(schemaResult.errors)).join(','));
@@ -96,15 +95,6 @@ PetSdk.prototype.init = function () {
 
     // merge app params with sdkparameters
     sdkParams = utilHelper.merge(appParams, appData);
-
-    // create cookie for SDK Tracker
-    //cookieHelper.create('SDK_COOKIE_NAME', sdkParams.cookiePrefix, sdkParams.cookieDomainName);
-    // initialize the tracker object
-
-    //this.tracker = {};
-    var self = this;
-    //tracker.enableAutoTracking(sdkParams.autotracking);
-    //console.log(sdkParams);
-    window.trackingID  = arguments[0];
+    window.trackingID = arguments[0];
     return utilHelper.merge(self, new PetTracker(sdkParams, sdkErrors));
 };

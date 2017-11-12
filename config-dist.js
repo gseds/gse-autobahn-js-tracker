@@ -9,7 +9,7 @@
 // Configuration for Tracker Javascript SDK
 
 module.exports = {
-    
+
     // name of LS variable holding offline event data
     localStorage: {
         event: 'event_ls_key_name',

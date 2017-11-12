@@ -36,10 +36,8 @@ function PetOffline(sdkParams) {
 PetOffline.prototype.save = function (data, type) {
     if (data) {
 
-        var storageName = (type == 'events') ? this.eventStorageName : this.activitiesStorageName;
-
+        var storageName = (type === 'events') ? this.eventStorageName : this.activitiesStorageName;
         this.peEventData = this.store.get(storageName);
-
         if (!this.peEventData) {
             this.peEventData = [data];
         } else {
@@ -65,62 +63,51 @@ PetOffline.prototype.checkData = function () {
         j,
         sdkData;
 
-    this.peEventData = this.store.get(this.eventStorageName),
+    this.peEventData = this.store.get(this.eventStorageName);
     this.peActivityData = this.store.get(this.activitiesStorageName);
-
     if (this.peEventData) {
-
         recordsChunkLimit = this.getAllowedDataChunk(this.peEventData);
         i = 0;
-
         while (i < this.peEventData.length) {
             dataArr = [];
             for (j = 0; j < recordsChunkLimit; j++) {
-
                 if (i >= this.peEventData.length) {
                     break;
                 }
 
                 dataArr.push(this.peEventData[i]);
                 ++i;
-
                 if (j === 0) {
                     indexStart = i - 1;
                 }
             }
 
             sdkData = dataArr;
-
             indexEnd = i - 1;
-            this.send(indexStart, indexEnd, sdkData, "events");
+            this.send(indexStart, indexEnd, sdkData, 'events');
         }
     }
 
     if (this.peActivityData) {
-
         recordsChunkLimit = this.getAllowedDataChunk(this.peActivityData);
         i = 0;
-
         while (i < this.peActivityData.length) {
             dataArr = [];
             for (j = 0; j < recordsChunkLimit; j++) {
-
                 if (i >= this.peActivityData.length) {
                     break;
                 }
 
                 dataArr.push(this.peActivityData[i]);
                 ++i;
-
                 if (j === 0) {
                     indexStart = i - 1;
                 }
             }
 
             sdkData = dataArr;
-
             indexEnd = i - 1;
-            this.send(indexStart, indexEnd, sdkData, "activities");
+            this.send(indexStart, indexEnd, sdkData, 'activities');
         }
     }
 };
@@ -146,22 +133,19 @@ PetOffline.prototype.send = function (indexStart, indexEnd, sdkData, type) {
         receiverUrl = this.receiver.defaultUrl;
     }
 
-    receiverUrl += "/collect/bulk/"+type;
-
+    receiverUrl += '/collect/bulk/' + type;
     data = {
         trackingID: sdkData[0].data.trackingID,
         sdkVersion: sdkData[0].data.sdkVersion
     };
-
     xmlhttp = this.ajax.sendXMLHTTP(receiverUrl, sdkData, data);
 
     // Handling response from Receiver
     xmlhttp.onreadystatechange = function () {
-        var localStorageName  = type == "events" ? self.eventStorageName : self.activitiesStorageName;
+        var localStorageName = type === 'events' ? self.eventStorageName : self.activitiesStorageName,
+            peEventsData;
         if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-
-            var peEventsData = self.store.get(localStorageName);
-
+            peEventsData = self.store.get(localStorageName);
             if (peEventsData) {
                 if (peEventsData.length >= ++indexEnd) {
                     // delete all processed data from local storage.
@@ -186,7 +170,7 @@ PetOffline.prototype.getAllowedDataChunk = function (peEventData) {
         x;
 
     recordsChunkLimit = 10,
-    sizeAllowed = false;
+        sizeAllowed = false;
 
     while (!sizeAllowed) {
         tempSizeCheck = [];

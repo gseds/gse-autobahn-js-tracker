@@ -45,14 +45,14 @@ PetRequest.prototype.send = function () {
         userSchema = new PetUserSchema().schema,
         utilsHelper = new PetUtilsHelper(),
 
-    // arguments
+        // arguments
         data = utilsHelper.clone(arguments[1]), // Getting parameter list
         errors = null, // Getting errors occurred in SDK
         callback = arguments[3], // Getting user's callback
         method = arguments[4], // Getting method for the Request
         options = arguments[2],
 
-    // local variables
+        // local variables
         result,
         xmlhttp,
         receiverUrl,
@@ -62,32 +62,6 @@ PetRequest.prototype.send = function () {
         localStorageAvailable = false,
         offline,
         intervalToProcess;
-
-    // marge cookie value with tracker data
-    if (cookieValue) {
-       // data = utilsHelper.merge(data, JSON.parse(cookieValue));
-    } else {
-        // Check whether Internal Session ID is present in every request
-        // // If not, create cookie and retrieve session ID
-        // cookieHelper.create(cookieName, arguments[0].cookiePrefix, arguments[0].cookieDomainName);
-        // cookieValue = cookieHelper.get(cookieName);
-
-        // if (cookieValue) {
-        //     data = utilsHelper.merge(data, JSON.parse(cookieValue));
-        // }
-    }
-
-    // if (!flag) {
-    //     result = tv4.validateMultiple(data, userSchema, true);
-    //     if (!result.valid) {
-    //         if (data.debugMode) {
-    //             console.error((utilsHelper.getErrorMessages(result.errors)).join(','));
-    //             return;
-    //         } else {
-    //             errors.user = utilHelper.getErrorMessages(result.errors);
-    //         }
-    //     }
-    // }
 
     if (typeof this.receiver[options.environment] !== 'undefined') {
         receiverUrl = this.receiver[options.environment];
@@ -99,41 +73,27 @@ PetRequest.prototype.send = function () {
         console.log('PETracker: no local storage found.');
     } else {
         localStorageAvailable = true;
-        if(offineEnabled){
+        if (offineEnabled) {
             offline = new PetOffline(this.sdkParams);
         }
     }
-
-
-    // if ((localStorageAvailable) && (typeof data.offlineSupport !== 'undefined') && (data.offlineSupport)) {
-    //     offineEnabled = true;
-    // }
 
     // Tracking Data formation
     result = {
         data: utilsHelper.removeNullParameters(utilsHelper.getDefaultValues(data))
     };
 
-    // grouping with context
-    // result.data = utilsHelper.group(result.data);
+    if (offineEnabled && localStorageAvailable) {
+        offline.save(result, options.eventType);
 
-    // checking sdk schema errors
-    // if (Object.keys(errors).length) {
-    //     result.errors = errors;
-    // }
-    // if LS available, enable interval-based data processing
+        intervalToProcess = TRACKING_TIME_INTERVAL;
+        if ((typeof data.intervalToProcess !== 'undefined') && (data.intervalToProcess) && (data.intervalToProcess >= 15000)) {
+            intervalToProcess = data.intervalToProcess;
+        }
 
-     if (offineEnabled && localStorageAvailable) {
-         offline.save(result, options.eventType);
-
-         intervalToProcess = TRACKING_TIME_INTERVAL;
-         if ((typeof data.intervalToProcess !== 'undefined') && (data.intervalToProcess) && (data.intervalToProcess >= 15000)) {
-             intervalToProcess = data.intervalToProcess;
-         }
-
-         if (!petIntervalId) { // this checking prevents creating multiple interval IDs
-             petIntervalId = setInterval(this.checkNetworkAvailable.bind(this), intervalToProcess);
-         }
+        if (!petIntervalId) { // this checking prevents creating multiple interval IDs
+            petIntervalId = setInterval(this.checkNetworkAvailable.bind(this), intervalToProcess);
+        }
     }
 
     // LS not available or it means offline won't work even if enabled.
@@ -144,14 +104,13 @@ PetRequest.prototype.send = function () {
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
                 if (typeof callback === 'function') {
-                    callback(null,JSON.parse(xmlhttp.responseText));
+                    callback(null, JSON.parse(xmlhttp.responseText));
                 }
-            }
-            else {
+            } else {
                 if (typeof callback === 'function') {
                     callback({
-                            error: xmlhttp.status
-                          });
+                        error: xmlhttp.status
+                    });
                 }
             }
         };
@@ -170,10 +129,11 @@ PetRequest.prototype.send = function () {
  */
 PetRequest.prototype.sendXMLHTTP = function (url, eventData, data, method) {
     method = method || 'POST';
+
     //Making HTTP Request to Receiver
     var xmlhttp,
         supportedProtocols = ['https:', 'http:'],
-        requestProtocol, gseAuthorizationToken = 'Bearer '+'GSE_AUTHORIZATION_TOKEN';
+        requestProtocol;
 
     if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
         xmlhttp = new XMLHttpRequest();
@@ -182,9 +142,8 @@ PetRequest.prototype.sendXMLHTTP = function (url, eventData, data, method) {
     }
 
     requestProtocol = (supportedProtocols.indexOf(window.location.protocol) > -1) ? window.location.protocol : 'https:';
-    xmlhttp.open(method,url, true);
+    xmlhttp.open(method, url, true);
     xmlhttp.setRequestHeader('Content-Type', 'application/json');
-    //xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xmlhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
     xmlhttp.setRequestHeader('PETRACKER-TRACKING-ID', window.trackingID);
 
@@ -193,9 +152,17 @@ PetRequest.prototype.sendXMLHTTP = function (url, eventData, data, method) {
         if (eventData[0].data.debugMode) {
             xmlhttp.setRequestHeader('Debug-Mode', eventData[0].data.debugMode);
         }
+
+        if (eventData[0].data.synchMode) {
+            xmlhttp.setRequestHeader('PETRACKER-SYNCHMODE', eventData[0].data.synchMode);
+        }
     } else {
         if (data.debugMode) {
             xmlhttp.setRequestHeader('Debug-Mode', data.debugMode);
+        }
+
+        if (data.synchMode) {
+            xmlhttp.setRequestHeader('PETRACKER-SYNCHMODE', data.synchMode);
         }
     }
 
@@ -212,5 +179,3 @@ PetRequest.prototype.checkNetworkAvailable = function () {
     var offline = new PetOffline(this.sdkParams);
     offline.isNetworkAvailable();
 };
-
-

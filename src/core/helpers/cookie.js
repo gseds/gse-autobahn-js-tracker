@@ -33,9 +33,8 @@ PetCookie.prototype.create = function () {
     if (!this.get(arguments[0])) {
         cookieName = arguments[0];
         cookiePrefix = arguments[1];
-        currentDate.setTime(currentDate.getTime()+(arguments[2]*60*1000)),
+        currentDate.setTime(currentDate.getTime() + (arguments[2] * 60 * 1000));
         cookieValue = arguments[3];
-
         expires = 'expires=' + currentDate.toUTCString();
 
         // cookie creation

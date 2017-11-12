@@ -26,7 +26,7 @@ function PetAppParams() {
         //debugMode
         debugMode: true,
 
-        originatingSystemCode: "AutobahnTrackerSDK",
+        originatingSystemCode: 'AutobahnTrackerSDK',
 
         //cookie rotatory time
         cookieRotatoryTime: 'AUTOBAHN_COOKIE_EXPIRY',
@@ -49,7 +49,8 @@ function PetAppParams() {
         // Application Environment
         environment: 'production',
 
-        offlineSupport: true,
+        // offline Support
+        offlineSupport: false,
 
         // Cookie Domain Name
         cookieDomainName: 'autobahn',
@@ -60,7 +61,7 @@ function PetAppParams() {
         // Interaction Type | Tracking Event Type
         interactionType: null,
 
-        // Event auto tracking configurations
-        autotracking: []
+        // synchMode
+        synchMode: false
     };
 }
