@@ -1,18 +1,14 @@
 #### AUTOBAHN Tracker :: Javascript SDK
 
-Tracker SDK is a Javascript file which used to measure the interactions in client application. It used to track several types of events in client side applications.
-
- * [Parameters list](https://docs.google.com/a/pearson.com/spreadsheets/d/1OopOjTrF-SzSt4RshzUKE-x2bIsSUVVBrlfN03ZhtG4/edit?usp=sharing "Tracker SDK Parameters list")
+Autobahn Tracker JS SDK sends tracking data through Autobahn to its associated streams and storage.Tracker SDK is an easy-to-use JavaScript library for sending data when a user interacts with a web application. Our SDK offers flexibility for developers to customize implementations.
 
 ##### Version
-1.0.0
+5.0.0
 
 ##### Technology used
  * Javascript
  * [Node Js](http://www.nodejs.org "Node JS")
  * [Grunt Js](http://www.gruntjs.com "Grunt Js")
-
-#### Installation
 
 ##### Developer Guide
 You need Grunt installed globally:
@@ -37,4 +33,4 @@ $ run "grunt develop"
 ```
 
 ##### Integration Guide
-To integrate the Tracker SDK with your application refer [Documentation](http://developer.english.com/services/sdk/javascript/v3 "Tracker SDK using Javascript")
+To integrate the Tracker SDK with your application refer [Documentation](https://docs.google.com/a/pearson.com/document/d/1a1qbZASjpu_jj5L9PeMClivPLNeP-vQ4iBtkvlQuR5s/edit?usp=sharing "Tracker SDK using Javascript")
