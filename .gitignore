@@ -8,6 +8,7 @@ gsedata-autobahn-receiver/settings.js
 
 
 # html, lib files
-example.html
+index.html
+socket.html
 lib/
 dist/
