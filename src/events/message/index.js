@@ -194,7 +194,7 @@ PetMessage.prototype.track = function () {
             var ajax = new PetRequest(self.eventParams.sdkParams),
                 url = autobahUrls.messaging + '/' + eventUrl,
                 data = eventData;
-            ajax.send(url, data, { offlineEnabled: self.eventParams.sdkParams.offlineEnabled, environment: self.eventParams.sdkParams.environment, eventType: eventUrl }, userCallback);
+            ajax.send(url, data, { trackingID: self.eventParams.sdkParams.trackingID, offlineEnabled: self.eventParams.sdkParams.offlineEnabled, environment: self.eventParams.sdkParams.environment, eventType: eventUrl, synchMode: self.eventParams.sdkParams.synchMode }, userCallback);
         }
     });
 };

@@ -1,7 +1,7 @@
 {
   "name": "TrackerSDK",
-  "version": "1.0.0",
-  "sdkVersion": "1.0.0",
+  "version": "5.0.0",
+  "sdkVersion": "5.0.0",
   "description": "Tracker SDK  is a JavaScript library for measuring how users interact with your website. It offers more flexibility for developers to customize their implementations.",
   "main": "./src/init.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "ssh://git@bitbucket.pearson.com/pebs/gsedata-js-tracker.git"
+    "url": "ssh://git@bitbucket.pearson.com/gseds/gse-autobahn-js-tracker.git"
   },
   "keywords": [
     "tracker",

@@ -98,7 +98,7 @@ PetRequest.prototype.send = function () {
 
     // LS not available or it means offline won't work even if enabled.
     if (!offineEnabled || !localStorageAvailable) {
-        xmlhttp = this.sendXMLHTTP(receiverUrl + arguments[0], result, data, method);
+        xmlhttp = this.sendXMLHTTP(receiverUrl + arguments[0], result, options, method);
 
         // Handling response from Receiver
         xmlhttp.onreadystatechange = function () {
@@ -127,7 +127,7 @@ PetRequest.prototype.send = function () {
  * @param  {Object} data [object that contains necessary params (appId, sdkVersion etc.)]
  * @returns {Object} [returns XMLHTTPREQUEST object]
  */
-PetRequest.prototype.sendXMLHTTP = function (url, eventData, data, method) {
+PetRequest.prototype.sendXMLHTTP = function (url, eventData, options, method) {
     method = method || 'POST';
 
     //Making HTTP Request to Receiver
@@ -145,25 +145,9 @@ PetRequest.prototype.sendXMLHTTP = function (url, eventData, data, method) {
     xmlhttp.open(method, url, true);
     xmlhttp.setRequestHeader('Content-Type', 'application/json');
     xmlhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
-    xmlhttp.setRequestHeader('PETRACKER-TRACKING-ID', window.trackingID);
-
-    // Setting DEBUG MODE in Header
-    if (eventData instanceof Array) {
-        if (eventData[0].data.debugMode) {
-            xmlhttp.setRequestHeader('Debug-Mode', eventData[0].data.debugMode);
-        }
-
-        if (eventData[0].data.synchMode) {
-            xmlhttp.setRequestHeader('PETRACKER-SYNCHMODE', eventData[0].data.synchMode);
-        }
-    } else {
-        if (data.debugMode) {
-            xmlhttp.setRequestHeader('Debug-Mode', data.debugMode);
-        }
-
-        if (data.synchMode) {
-            xmlhttp.setRequestHeader('PETRACKER-SYNCHMODE', data.synchMode);
-        }
+    xmlhttp.setRequestHeader('PETRACKER-TRACKING-ID', options.trackingID);
+    if (options.synchMode) {
+        xmlhttp.setRequestHeader('PETRACKER-SYNCHMODE', options.synchMode);
     }
 
     xmlhttp.send(JSON.stringify(eventData));

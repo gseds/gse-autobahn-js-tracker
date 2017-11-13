@@ -95,6 +95,5 @@ PetSdk.prototype.init = function () {
 
     // merge app params with sdkparameters
     sdkParams = utilHelper.merge(appParams, appData);
-    window.trackingID = arguments[0];
     return utilHelper.merge(self, new PetTracker(sdkParams, sdkErrors));
 };

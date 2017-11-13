@@ -133,7 +133,7 @@ PetOffline.prototype.send = function (indexStart, indexEnd, sdkData, type) {
         receiverUrl = this.receiver.defaultUrl;
     }
 
-    receiverUrl += '/collect/bulk/' + type;
+    receiverUrl += '/collect/' + type;
     data = {
         trackingID: sdkData[0].data.trackingID,
         sdkVersion: sdkData[0].data.sdkVersion

@@ -10,3 +10,4 @@ gsedata-autobahn-receiver/settings.js
 # html, lib files
 example.html
 lib/
+dist/
