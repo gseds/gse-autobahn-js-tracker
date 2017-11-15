@@ -3441,7 +3441,7 @@ function autobahnValidator(eventParams, event, callback) {
         urlFormatter = autobahUrls.schema + '/';
         urlFormatter += event.namespace + '/' + event.messageTypeCode + '/' + (event.messageVersion ? event.messageVersion : 'latest');
         ajax = new PetRequest(eventParams);
-        ajax.send(urlFormatter, {}, { offlineEnabled: false, environment: eventParams.environment }, function (err, data) {
+        ajax.send(urlFormatter, {}, { trackingID: eventParams.trackingID, offlineEnabled: false, environment: eventParams.environment }, function (err, data) {
             if (err && err.error !== 200) {
                 if (typeof callback === 'function') {
                     callback(err);
