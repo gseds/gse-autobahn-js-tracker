@@ -31,7 +31,7 @@ function catchSchemaError(data, sdkParams) {
     } else {
         var ajaxRequest = new PetRequest(sdkParams),
             url = autobahUrls.collection + '/' + sdkParams.trackingID;
-        ajaxRequest.send(url, data, { offlineEnabled: false, environment: sdkParams.environment }, false);
+        ajaxRequest.send(url, data, { trackingID: sdkParams.trackingID, offlineEnabled: false, environment: sdkParams.environment }, false);
     }
 }
 
@@ -53,15 +53,15 @@ function autofillParameters(data, schema, sdkParams) {
 
 function autobahnSchemaCookieValidator(event) {
     var cookieFilter = document.cookie.split(';').filter(function (value) {
-        return value.indexOf(event.namespace + '|' + event.messageTypeCode + '|' + ((event.messageVersion) ? event.messageVersion : 'latest')) > -1;
+        return value.indexOf(event.namespace + '-' + event.messageTypeCode + '-' + ((event.messageVersion) ? event.messageVersion : 'latest')) > -1;
     });
 
     if (cookieFilter.length > 0) {
-        return JSON.parse(cookieFilter[0].split('=')[1]);
+        return JSON.parse(decodeURI(cookieFilter[0].split('=')[1]));
     }
 
     return false;
-}
+};
 
 function autobahnValidator(eventParams, event, callback) {
 
@@ -113,7 +113,7 @@ function autobahnValidator(eventParams, event, callback) {
         urlFormatter = autobahUrls.schema + '/';
         urlFormatter += event.namespace + '/' + event.messageTypeCode + '/' + (event.messageVersion ? event.messageVersion : 'latest');
         ajax = new PetRequest(eventParams);
-        ajax.send(urlFormatter, {}, { offlineEnabled: false, environment: eventParams.environment }, function (err, data) {
+        ajax.send(urlFormatter, {}, { trackingID: eventParams.trackingID, offlineEnabled: false, environment: eventParams.environment }, function (err, data) {
             if (err && err.error !== 200) {
                 if (typeof callback === 'function') {
                     callback(err);
@@ -136,7 +136,7 @@ function autobahnValidator(eventParams, event, callback) {
                 schema = data.schemaDefinition;
                 schemaValidationResult = tv4.validateMultiple(event.payload, schema, true);
                 cookie = new PetCookie();
-                cookie.create(event.namespace + '|' + event.messageTypeCode + '|' + (messageVersion ? messageVersion : 'latest'), '', (eventParams.cookieExpiryTime || 180) * 60 * 1000, { schema: schema, version: data.version });
+                cookie.create(event.namespace + '-' + event.messageTypeCode + '-' + (messageVersion ? messageVersion : 'latest'), '', (eventParams.cookieExpiryTime || 180) * 60 * 1000, { schema: schema, version: data.version });
                 if (!schemaValidationResult.valid && eventParams.schemaValidation) {
                     event.error = schemaValidationResult;
                     catchSchemaError(event, eventParams);
