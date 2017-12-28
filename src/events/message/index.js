@@ -61,7 +61,7 @@ function autobahnSchemaCookieValidator(event) {
     }
 
     return false;
-};
+}
 
 function autobahnValidator(eventParams, event, callback) {
 
@@ -168,6 +168,7 @@ PetMessage.prototype.track = function () {
         options = arguments[2],
         userCallback = arguments[3],
         self = this,
+        utilHelper = new PetUtilsHelper(),
         formatPayload;
 
     formatPayload = {
@@ -180,7 +181,7 @@ PetMessage.prototype.track = function () {
     eventData = {
         originatingSystemCode: (options && options.originatingSystemCode) || this.eventParams.sdkParams.originatingSystemCode
     };
-    eventData[eventUrl] = [formatPayload];
+    eventData[eventUrl] = [utilHelper.merge(options || {}, formatPayload)];
 
     if (!formatPayload.messageTypeCode) {
         console.error('Message Typecode is a required property.');

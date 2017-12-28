@@ -35,6 +35,7 @@ PetCookie.prototype.create = function () {
         cookiePrefix = arguments[1];
         currentDate.setTime(currentDate.getTime() + (arguments[2] * 60 * 1000));
         expires = 'expires=' + currentDate.toUTCString();
+
         // cookie creation
         document.cookie = cookiePrefix + cookieName + '=' + encodeURI(cookieValue) + ';path=/';
     }
