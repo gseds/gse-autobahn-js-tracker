@@ -25,20 +25,19 @@ PetCookie.prototype.create = function () {
         expiry = (SDK_COOKIE_EXPIRY * 60 * 1000),
         cookieName,
         cookiePrefix,
-        cookieValue,
+        cookieValue = JSON.stringify(arguments[3] || {}),
         expireTime,
         currentDate = new Date(),
         expires;
 
-    if (!this.get(arguments[0])) {
+    if (!this.get(arguments[0]) && cookieValue.length < 4000) {
         cookieName = arguments[0];
         cookiePrefix = arguments[1];
         currentDate.setTime(currentDate.getTime() + (arguments[2] * 60 * 1000));
-        cookieValue = arguments[3];
         expires = 'expires=' + currentDate.toUTCString();
 
         // cookie creation
-        document.cookie = cookiePrefix + cookieName + '=' + JSON.stringify(cookieValue) + ';path=/';
+        document.cookie = cookiePrefix + cookieName + '=' + encodeURI(cookieValue) + ';path=/';
     }
 };
 

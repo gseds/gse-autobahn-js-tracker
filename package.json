@@ -1,6 +1,6 @@
 {
   "name": "TrackerSDK",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "sdkVersion": "5.0.0",
   "description": "Tracker SDK  is a JavaScript library for measuring how users interact with your website. It offers more flexibility for developers to customize their implementations.",
   "main": "./src/init.js",

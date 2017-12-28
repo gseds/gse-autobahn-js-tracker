@@ -31,7 +31,7 @@ function catchSchemaError(data, sdkParams) {
     } else {
         var ajaxRequest = new PetRequest(sdkParams),
             url = autobahUrls.collection + '/' + sdkParams.trackingID;
-        ajaxRequest.send(url, data, { offlineEnabled: false, environment: sdkParams.environment }, false);
+        ajaxRequest.send(url, data, { trackingID: sdkParams.trackingID, offlineEnabled: false, environment: sdkParams.environment }, false);
     }
 }
 
@@ -53,11 +53,11 @@ function autofillParameters(data, schema, sdkParams) {
 
 function autobahnSchemaCookieValidator(event) {
     var cookieFilter = document.cookie.split(';').filter(function (value) {
-        return value.indexOf(event.namespace + '|' + event.messageTypeCode + '|' + ((event.messageVersion) ? event.messageVersion : 'latest')) > -1;
+        return value.indexOf(event.namespace + '-' + event.messageTypeCode + '-' + ((event.messageVersion) ? event.messageVersion : 'latest')) > -1;
     });
 
     if (cookieFilter.length > 0) {
-        return JSON.parse(cookieFilter[0].split('=')[1]);
+        return JSON.parse(decodeURI(cookieFilter[0].split('=')[1]));
     }
 
     return false;
@@ -136,7 +136,7 @@ function autobahnValidator(eventParams, event, callback) {
                 schema = data.schemaDefinition;
                 schemaValidationResult = tv4.validateMultiple(event.payload, schema, true);
                 cookie = new PetCookie();
-                cookie.create(event.namespace + '|' + event.messageTypeCode + '|' + (messageVersion ? messageVersion : 'latest'), '', (eventParams.cookieExpiryTime || 180) * 60 * 1000, { schema: schema, version: data.version });
+                cookie.create(event.namespace + '-' + event.messageTypeCode + '-' + (messageVersion ? messageVersion : 'latest'), '', (eventParams.cookieExpiryTime || 180) * 60 * 1000, { schema: schema, version: data.version });
                 if (!schemaValidationResult.valid && eventParams.schemaValidation) {
                     event.error = schemaValidationResult;
                     catchSchemaError(event, eventParams);
@@ -168,6 +168,7 @@ PetMessage.prototype.track = function () {
         options = arguments[2],
         userCallback = arguments[3],
         self = this,
+        utilHelper = new PetUtilsHelper(),
         formatPayload;
 
     formatPayload = {
@@ -180,7 +181,7 @@ PetMessage.prototype.track = function () {
     eventData = {
         originatingSystemCode: (options && options.originatingSystemCode) || this.eventParams.sdkParams.originatingSystemCode
     };
-    eventData[eventUrl] = [formatPayload];
+    eventData[eventUrl] = [utilHelper.merge(options || {}, formatPayload)];
 
     if (!formatPayload.messageTypeCode) {
         console.error('Message Typecode is a required property.');
